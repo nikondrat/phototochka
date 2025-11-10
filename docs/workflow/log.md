@@ -63,3 +63,9 @@
 - Действия: start=2025-11-10T20:30+03:00, finish=2025-11-10T20:45+03:00, duration=15m; скорректирован блок преимуществ в `frontend/src/data/homepage.ts` (замена «Безопасные платежи» на «Сильная аналитика» с упором на метрики по контенту), выполнена проверка `npm run build`.
 - Передаю: QA Engineer — проверить тексты на странице и соответствие тона; Multi-Agent Controller — учесть правки в бренд-гайдах.
 - Примечания: outcome=success, blockers=нет.
+
+## 2025-11-10 — Fullstack/Frontend Engineer
+- Задача: DEV-009 — Экспорт Vue-приложения одним HTML-файлом
+- Действия: start=2025-11-10T21:05+03:00, finish=2025-11-10T21:15+03:00, duration=10m; добавлен плагин `vite-plugin-singlefile` в `frontend/vite.config.ts`, выполнена сборка `npm run build` — подтверждён выпуск единого `dist/index.html`.
+- Передаю: QA Engineer — убедиться, что автономный HTML корректно открывается в разных браузерах; Multi-Agent Controller — при необходимости задокументировать формат поставки.
+- Примечания: outcome=success, blockers=нет.
