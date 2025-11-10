@@ -6,8 +6,8 @@
           <span class="footer__dot" />ФотоТочка
         </a>
         <p>
-          Платформа для покупки и продажи цифровых фотографий в рамках дипломного проекта. Все сделки —
-          симуляция.
+          ФотоТочка объединяет фотографов, бренды и агентства: помогает быстро находить, лицензировать и
+          распространять актуальные визуальные материалы по всему миру.
         </p>
       </div>
       <div class="footer__column" id="blog">
@@ -31,7 +31,7 @@
     </div>
     <div class="footer__bottom">
       <div class="container footer__bottom-inner">
-        <span>© {{ new Date().getFullYear() }} ФотоТочка. Учебный проект.</span>
+        <span>© {{ new Date().getFullYear() }} ФотоТочка. Все права защищены.</span>
         <div class="footer__socials" aria-label="Социальные сети">
           <a href="#" aria-label="Telegram">TG</a>
           <a href="#" aria-label="VK">VK</a>

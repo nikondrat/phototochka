@@ -13,10 +13,10 @@ const props = defineProps<Props>()
     <div class="container">
       <div class="section-heading">
         <span class="section-heading__eyebrow">Почему ФотоТочка</span>
-        <h2 id="benefits-title" class="section-heading__title">Платформа, созданная для обучения</h2>
+        <h2 id="benefits-title" class="section-heading__title">Платформа, созданная для профессионалов</h2>
         <p class="section-heading__subtitle">
-          Тестируйте бизнес-процессы, отрабатывайте пользовательские сценарии и демонстрируйте дипломный
-          проект с реальными интерфейсами e-commerce.
+          ФотоТочка помогает фотографам продавать контент, а брендам — быстро находить и лицензировать
+          качественные снимки для коммерческого использования.
         </p>
       </div>
 

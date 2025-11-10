@@ -54,6 +54,12 @@
 
 ## 2025-11-10 — Fullstack/Frontend Engineer
 - Задача: DEV-007 — Исправление мобильного меню и теней карусели
-- Действия: start=2025-11-10T19:05+03:00, finish=2025-11-10T20:10+03:00, duration=1h05m; обновлены стили `frontend/src/components/HeaderNav.vue` (поддержка safe-area, автофокус панели, корректная прокрутка, вынос мобильного меню через `<Teleport>` поверх `body`, снятие артефактов хедера) и `frontend/src/components/PhotoCarousel.vue` (маскировка боковых теней, увеличенный нижний отступ для сохранения тени); выполнена проверка `npm run build`.
+- Действия: start=2025-11-10T19:05+03:00, finish=2025-11-10T20:25+03:00, duration=1h20m; обновлены стили `frontend/src/components/HeaderNav.vue` (поддержка safe-area, автофокус панели, корректная прокрутка, вынос мобильного меню через `<Teleport>` поверх `body`, снятие артефактов хедера), `frontend/src/components/PhotoCarousel.vue` (маскировка боковых теней, увеличенный нижний отступ для сохранения тени) и тексты `frontend/src/components/BenefitsSection.vue` + `frontend/src/data/homepage.ts` (маркетинговые формулировки под реальный маркетплейс); выполнена проверка `npm run build`.
 - Передаю: QA Engineer — проверить мобильное меню после раскрытия и визуал теней карусели на устройствах; Multi-Agent Controller — подтвердить закрытие задачи.
+- Примечания: outcome=success, blockers=нет.
+
+## 2025-11-10 — Fullstack/Frontend Engineer
+- Задача: DEV-008 — Актуализация преимуществ ФотоТочки
+- Действия: start=2025-11-10T20:30+03:00, finish=2025-11-10T20:45+03:00, duration=15m; скорректирован блок преимуществ в `frontend/src/data/homepage.ts` (замена «Безопасные платежи» на «Сильная аналитика» с упором на метрики по контенту), выполнена проверка `npm run build`.
+- Передаю: QA Engineer — проверить тексты на странице и соответствие тона; Multi-Agent Controller — учесть правки в бренд-гайдах.
 - Примечания: outcome=success, blockers=нет.
