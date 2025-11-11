@@ -20,8 +20,8 @@ const props = defineProps<Props>()
             кадры и делитесь своим творчеством в безопасной среде.
           </p>
           <div class="hero__actions">
-            <button class="btn btn--primary" type="button">Открыть каталог</button>
-            <button class="btn btn--ghost" type="button">Присоединиться как автор</button>
+            <RouterLink class="btn btn--primary" to="/catalog">Открыть каталог</RouterLink>
+            <RouterLink class="btn btn--ghost" to="/help#authors">Присоединиться как автор</RouterLink>
           </div>
           <div class="hero__tags" role="list">
             <span class="tag" role="listitem">#цифровая_фотография</span>

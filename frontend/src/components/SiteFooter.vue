@@ -2,31 +2,31 @@
   <footer class="footer" aria-labelledby="footer-title">
     <div class="container footer__grid">
       <div class="footer__brand">
-        <a class="footer__logo" href="#top">
+        <RouterLink class="footer__logo" to="/">
           <span class="footer__dot" />ФотоТочка
-        </a>
+        </RouterLink>
         <p>
           ФотоТочка объединяет фотографов, бренды и агентства: помогает быстро находить, лицензировать и
           распространять актуальные визуальные материалы по всему миру.
         </p>
       </div>
-      <div class="footer__column" id="blog">
+      <div class="footer__column">
         <h3>Блог</h3>
-        <a href="#">Советы авторам</a>
-        <a href="#">Тренды фотографии</a>
-        <a href="#">Обзоры коллекций</a>
+        <RouterLink to="/blog#guides">Советы авторам</RouterLink>
+        <RouterLink to="/blog#trends">Тренды фотографии</RouterLink>
+        <RouterLink to="/blog#collections">Обзоры коллекций</RouterLink>
       </div>
-      <div class="footer__column" id="help">
+      <div class="footer__column">
         <h3>Помощь</h3>
-        <a href="#">FAQ</a>
-        <a href="#">Контакты</a>
-        <a href="#">Техподдержка</a>
+        <RouterLink to="/help#faq">FAQ</RouterLink>
+        <RouterLink to="/help#support">Контакты</RouterLink>
+        <RouterLink to="/help#channels">Техподдержка</RouterLink>
       </div>
-      <div class="footer__column" id="about">
+      <div class="footer__column">
         <h3>Служебные страницы</h3>
-        <a href="#">Политика конфиденциальности</a>
-        <a href="#">Пользовательское соглашение</a>
-        <a href="#">Правила использования контента</a>
+        <RouterLink to="/about#policy">Политика конфиденциальности</RouterLink>
+        <RouterLink to="/about#terms">Пользовательское соглашение</RouterLink>
+        <RouterLink to="/about#rights">Правила использования контента</RouterLink>
       </div>
     </div>
     <div class="footer__bottom">

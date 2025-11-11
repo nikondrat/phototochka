@@ -69,3 +69,9 @@
 - Действия: start=2025-11-10T21:05+03:00, finish=2025-11-10T21:15+03:00, duration=10m; добавлен плагин `vite-plugin-singlefile` в `frontend/vite.config.ts`, выполнена сборка `npm run build` — подтверждён выпуск единого `dist/index.html`.
 - Передаю: QA Engineer — убедиться, что автономный HTML корректно открывается в разных браузерах; Multi-Agent Controller — при необходимости задокументировать формат поставки.
 - Примечания: outcome=success, blockers=нет.
+
+## 2025-11-11 — Fullstack/Frontend Engineer
+- Задача: DEV-010 — Маршрутизация и внутренние страницы ФотоТочки
+- Действия: start=2025-11-11T10:05+03:00, finish=2025-11-11T12:05+03:00, duration=2h; установил `vue-router`, добавил роутер и рефакторинг `App.vue`; вынес главную страницу в `HomePage.vue`, создал новые страницы `CatalogPage.vue`, `BlogPage.vue`, `HelpPage.vue`, `AboutPage.vue` с мок-контентом и стилями; обновил `HeaderNav.vue`, `SiteFooter.vue`, `HeroBanner.vue`, `DualCTA.vue` для работы с маршрутизацией; добавил набор данных `src/data/pages.ts`; привёл FAQ на странице «Помощь» к открытым карточкам с обновлёнными текстами; выполнил сборку `npm run build` — успешно.
+- Передаю: QA Engineer — проверить навигацию и адаптивные состояния новых страниц на основных брейкпоинтах; Multi-Agent Controller — подтвердить соответствие контента требованиям дипломного проекта и скорректировать roadmap при необходимости.
+- Примечания: outcome=success, blockers=нет.

@@ -8,7 +8,7 @@
             Загружайте фотографии, описывайте лицензии и отслеживайте статистику продаж в личном кабинете
             автора.
           </p>
-          <button class="btn btn--primary" type="button">Стать автором</button>
+          <RouterLink class="btn btn--primary" to="/help#authors">Стать автором</RouterLink>
         </article>
         <article class="dual-cta__card dual-cta__card--secondary" aria-labelledby="dual-cta-sub">
           <h2 id="dual-cta-sub">Найдите идеальные фото</h2>
@@ -16,7 +16,7 @@
             Используйте расширенный поиск и фильтры, чтобы быстро подобрать изображения для проектов и
             презентаций.
           </p>
-          <button class="btn btn--ghost" type="button">Перейти в каталог</button>
+          <RouterLink class="btn btn--ghost" to="/catalog">Перейти в каталог</RouterLink>
         </article>
       </div>
     </div>
@@ -71,5 +71,6 @@
   background: rgba(255, 255, 255, 0.08);
 }
 </style>
+
 
 

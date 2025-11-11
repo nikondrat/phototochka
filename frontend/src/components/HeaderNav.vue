@@ -1,9 +1,24 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const isMenuOpen = ref(false);
 const isScrolled = ref(false);
 const panelRef = ref<HTMLDivElement | null>(null);
+const route = useRoute();
+const router = useRouter();
+
+type NavLink = {
+  label: string;
+  to: { name: string };
+};
+
+const navLinks: NavLink[] = [
+  { label: "Каталог", to: { name: "catalog" } },
+  { label: "Блог", to: { name: "blog" } },
+  { label: "Помощь", to: { name: "help" } },
+  { label: "О проекте", to: { name: "about" } },
+];
 
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value;
@@ -15,6 +30,11 @@ function closeMenu() {
 
 function handleScroll() {
   isScrolled.value = window.scrollY > 16;
+}
+
+function navigate(link: NavLink) {
+  router.push(link.to);
+  closeMenu();
 }
 
 watch(isMenuOpen, (open) => {
@@ -46,15 +66,22 @@ onUnmounted(() => {
     id="top"
   >
     <div class="container header__content">
-      <a class="header__logo" href="#" @click="closeMenu">
+      <RouterLink class="header__logo" to="/" @click="closeMenu">
         <span class="header__logo-dot" />ФотоТочка
-      </a>
+      </RouterLink>
 
       <nav class="header__nav">
-        <a href="#catalog">Каталог</a>
-        <a href="#blog">Блог</a>
-        <a href="#help">Помощь</a>
-        <a href="#about">О проекте</a>
+        <RouterLink
+          v-for="link in navLinks"
+          :key="link.label"
+          :to="link.to"
+          :class="[
+            'header__nav-link',
+            { 'header__nav-link--active': route.name === link.to.name },
+          ]"
+        >
+          {{ link.label }}
+        </RouterLink>
       </nav>
 
       <div class="header__actions">
@@ -130,22 +157,19 @@ onUnmounted(() => {
             </div>
 
             <div class="header__mobile-links">
-              <a href="#catalog" @click="closeMenu">
-                <span>Каталог</span>
+              <button
+                v-for="link in navLinks"
+                :key="`mobile-${link.label}`"
+                type="button"
+                :class="[
+                  'header__mobile-link',
+                  { 'header__mobile-link--active': route.name === link.to.name },
+                ]"
+                @click="navigate(link)"
+              >
+                <span>{{ link.label }}</span>
                 <span aria-hidden="true">→</span>
-              </a>
-              <a href="#blog" @click="closeMenu">
-                <span>Блог</span>
-                <span aria-hidden="true">→</span>
-              </a>
-              <a href="#help" @click="closeMenu">
-                <span>Помощь</span>
-                <span aria-hidden="true">→</span>
-              </a>
-              <a href="#about" @click="closeMenu">
-                <span>О проекте</span>
-                <span aria-hidden="true">→</span>
-              </a>
+              </button>
             </div>
 
             <div class="header__mobile-actions">
@@ -215,12 +239,14 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-.header__nav a {
+.header__nav-link {
   position: relative;
   padding: 0.25rem 0;
+  color: inherit;
+  transition: color 0.2s ease;
 }
 
-.header__nav a::after {
+.header__nav-link::after {
   content: "";
   position: absolute;
   inset-inline: 0;
@@ -232,8 +258,13 @@ onUnmounted(() => {
   transition: transform 0.2s ease;
 }
 
-.header__nav a:hover::after {
+.header__nav-link:hover::after,
+.header__nav-link--active::after {
   transform: scaleX(1);
+}
+
+.header__nav-link--active {
+  color: var(--color-accent);
 }
 
 .header__actions {
@@ -387,7 +418,7 @@ onUnmounted(() => {
   overflow-y: auto;
 }
 
-.header__mobile-links a {
+.header__mobile-link {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -397,14 +428,19 @@ onUnmounted(() => {
   padding-bottom: 0.7rem;
   border-bottom: 1px solid rgba(15, 23, 42, 0.08);
   transition: color 0.2s ease;
+  background: transparent;
+  border: none;
+  padding-inline: 0;
+  cursor: pointer;
 }
 
-.header__mobile-links a span:last-child {
+.header__mobile-link span:last-child {
   font-size: 1.2rem;
   opacity: 0.35;
 }
 
-.header__mobile-links a:hover {
+.header__mobile-link:hover,
+.header__mobile-link--active {
   color: var(--color-accent);
 }
 
