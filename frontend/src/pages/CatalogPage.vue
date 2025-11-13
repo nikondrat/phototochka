@@ -204,14 +204,19 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
 }
 
 .catalog-card__image {
+  position: relative;
   aspect-ratio: 16 / 10;
   background: rgba(15, 23, 42, 0.05);
+  overflow: hidden;
 }
 
 .catalog-card__image img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .catalog-card__body {

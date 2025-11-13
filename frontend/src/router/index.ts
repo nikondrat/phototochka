@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { auth } from '../utils/auth'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -33,10 +34,62 @@ const router = createRouter({
       component: () => import('../pages/AboutPage.vue'),
     },
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('../pages/LoginPage.vue'),
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('../pages/RegisterPage.vue'),
+    },
+    {
+      path: '/photographer',
+      name: 'photographer-dashboard',
+      component: () => import('../pages/PhotographerDashboard.vue'),
+    },
+    {
+      path: '/photographer/photos',
+      name: 'photographer-photos',
+      component: () => import('../pages/PhotographerPhotos.vue'),
+    },
+    {
+      path: '/photographer/photos/upload',
+      name: 'photographer-upload',
+      component: () => import('../pages/PhotographerUpload.vue'),
+    },
+    {
+      path: '/photographer/analytics',
+      name: 'photographer-analytics',
+      component: () => import('../pages/PhotographerAnalytics.vue'),
+    },
+    {
+      path: '/photographer/settings',
+      name: 'photographer-settings',
+      component: () => import('../pages/PhotographerSettings.vue'),
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('../pages/AdminPage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/',
     },
   ],
+})
+
+// Защита роутов
+router.beforeEach((to, _from, next) => {
+  if (to.meta.requiresAuth && !auth.isAuthenticated()) {
+    next({ name: 'login', query: { redirect: to.fullPath } })
+  } else if (to.meta.requiresAdmin && !auth.isAdmin()) {
+    next({ name: 'home' })
+  } else {
+    next()
+  }
 })
 
 export default router

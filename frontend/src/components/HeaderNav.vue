@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { auth } from "../utils/auth";
 
 const isMenuOpen = ref(false);
 const isScrolled = ref(false);
 const panelRef = ref<HTMLDivElement | null>(null);
 const route = useRoute();
 const router = useRouter();
+const userState = ref(auth.getCurrentUser());
 
 type NavLink = {
   label: string;
@@ -19,6 +21,14 @@ const navLinks: NavLink[] = [
   { label: "Помощь", to: { name: "help" } },
   { label: "О проекте", to: { name: "about" } },
 ];
+
+const currentUser = computed(() => userState.value);
+const isAdmin = computed(() => userState.value?.role === 'admin');
+
+// Обновляем состояние пользователя при изменении роута (например, после логина)
+watch(() => route.path, () => {
+  userState.value = auth.getCurrentUser();
+});
 
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value;
@@ -34,6 +44,13 @@ function handleScroll() {
 
 function navigate(link: NavLink) {
   router.push(link.to);
+  closeMenu();
+}
+
+function handleLogout() {
+  auth.logout();
+  userState.value = null;
+  router.push('/');
   closeMenu();
 }
 
@@ -85,8 +102,15 @@ onUnmounted(() => {
       </nav>
 
       <div class="header__actions">
-        <button class="btn btn--ghost" type="button">Войти</button>
-        <button class="btn btn--primary" type="button">Стать автором</button>
+        <template v-if="currentUser">
+          <RouterLink v-if="isAdmin" class="btn btn--ghost" to="/admin">Админка</RouterLink>
+          <span class="header__user">{{ currentUser.name }}</span>
+          <button class="btn btn--ghost" @click="handleLogout">Выйти</button>
+        </template>
+        <template v-else>
+          <RouterLink class="btn btn--ghost" to="/login">Войти</RouterLink>
+          <RouterLink class="btn btn--primary" to="/register">Стать автором</RouterLink>
+        </template>
       </div>
 
       <button
@@ -173,10 +197,19 @@ onUnmounted(() => {
             </div>
 
             <div class="header__mobile-actions">
-              <button class="btn btn--ghost" type="button">Войти</button>
-              <button class="btn btn--primary" type="button">
-                Стать автором
-              </button>
+              <template v-if="currentUser">
+                <RouterLink v-if="isAdmin" class="btn btn--ghost" to="/admin" @click="closeMenu">
+                  Админка
+                </RouterLink>
+                <span class="header__mobile-user">{{ currentUser.name }}</span>
+                <button class="btn btn--ghost" @click="handleLogout">Выйти</button>
+              </template>
+              <template v-else>
+                <RouterLink class="btn btn--ghost" to="/login" @click="closeMenu">Войти</RouterLink>
+                <RouterLink class="btn btn--primary" to="/register" @click="closeMenu">
+                  Стать автором
+                </RouterLink>
+              </template>
             </div>
           </div>
         </div>
@@ -454,6 +487,19 @@ onUnmounted(() => {
 .header__mobile-actions .btn {
   width: 100%;
   justify-content: center;
+}
+
+.header__user {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.header__mobile-user {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.5rem 0;
 }
 
 .drawer-enter-active,

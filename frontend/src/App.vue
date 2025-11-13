@@ -1,14 +1,38 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import HeaderNav from './components/HeaderNav.vue'
-import SiteFooter from './components/SiteFooter.vue'
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import { RouterView } from "vue-router";
+import HeaderNav from "./components/HeaderNav.vue";
+import SiteFooter from "./components/SiteFooter.vue";
+
+const route = useRoute();
+
+// Определяем, является ли текущая страница страницей авторизации
+const isAuthPage = computed(() => {
+  return route.name === "login" || route.name === "register";
+});
+
+// Определяем, является ли текущая страница страницей админки или фотографа
+const isAdminOrPhotographerPage = computed(() => {
+  const routeName = route.name as string;
+  return (
+    routeName === "admin" ||
+    routeName?.startsWith("photographer-") ||
+    routeName?.startsWith("admin-")
+  );
+});
+
+// Показываем хедер и футер только на обычных страницах
+const showHeaderAndFooter = computed(() => {
+  return !isAuthPage.value && !isAdminOrPhotographerPage.value;
+});
 </script>
 
 <template>
   <div class="app">
-    <HeaderNav />
+    <HeaderNav v-if="showHeaderAndFooter" />
     <RouterView />
-    <SiteFooter />
+    <SiteFooter v-if="showHeaderAndFooter" />
   </div>
 </template>
 
