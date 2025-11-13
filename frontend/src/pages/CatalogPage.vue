@@ -193,12 +193,14 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
 }
 
 .catalog-card {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   border-radius: 24px;
   overflow: hidden;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: #ffffff;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  height: 100%;
 }
 
 .catalog-card__image {
@@ -214,8 +216,10 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
 
 .catalog-card__body {
   padding: 1.6rem 1.75rem 1.85rem;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.9rem;
+  flex: 1;
 }
 
 .catalog-card__body h3 {
@@ -237,6 +241,7 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
 .catalog-card__link {
   font-weight: 600;
   color: var(--color-accent);
+  margin-top: auto;
 }
 
 .catalog-collections {

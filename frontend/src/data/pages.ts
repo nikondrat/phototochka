@@ -1,3 +1,11 @@
+import creativeDesk from '../assets/images/creative-desk.jpg'
+import industrialGrid from '../assets/images/industrial-grid.jpg'
+import skylineOverlook from '../assets/images/skyline-overlook.jpg'
+import streetStyle from '../assets/images/street-style.jpg'
+import techInstallation from '../assets/images/tech-installation.jpg'
+import urbanLab from '../assets/images/urban-lab.jpg'
+import valleyOverlook from '../assets/images/valley-overlook.jpg'
+
 export interface CatalogCategory {
   id: string
   title: string
@@ -79,26 +87,23 @@ export const catalogCategories: CatalogCategory[] = [
     title: 'Редакционные подборки',
     description:
       'Коллекции, созданные нашей командой кураторов для журналов, медиа и digital-платформ.',
-    coverUrl:
-      'https://images.unsplash.com/photo-1525088553748-01d6e210e00b?auto=format&fit=crop&w=920&q=80',
-    tags: ['журналистика', 'истории', 'локальный контент'],
+    coverUrl: urbanLab,
+    tags: ['редакции', 'интервью', 'медиа'],
   },
   {
     id: 'commercial',
     title: 'Коммерческие лицензии',
     description:
       'Универсальные кадры для рекламных кампаний, презентаций и SMM. Доступны расширенные лицензии.',
-    coverUrl:
-      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=920&q=80',
-    tags: ['брендинг', 'технологии', 'стартапы'],
+    coverUrl: industrialGrid,
+    tags: ['брендинг', 'технологии', 'инфраструктура'],
   },
   {
     id: 'authentic',
     title: 'Аутентичные истории',
     description:
       'Реальные люди, места и эмоции без постановочных сцен. Создано авторами из локальных сообществ.',
-    coverUrl:
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=920&q=80',
+    coverUrl: streetStyle,
     tags: ['портреты', 'сообщества', 'lifestyle'],
   },
 ]
@@ -109,8 +114,7 @@ export const curatedCollections: CuratedCollection[] = [
     title: 'Night Cities 2025',
     description:
       'Неоновые ландшафты мегаполисов: ночная урбанистика, отражения в стекле, жизнь после заката.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=880&q=80',
+    imageUrl: skylineOverlook,
     stats: { items: 84, updated: 'Обновлено 3 дня назад' },
   },
   {
@@ -118,8 +122,7 @@ export const curatedCollections: CuratedCollection[] = [
     title: 'Craft & Artisan Stories',
     description:
       'Истории создателей: мастерские, процесс создания, детали и руки, работающие с материалом.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=880&q=80',
+    imageUrl: creativeDesk,
     stats: { items: 62, updated: 'Обновлено 1 неделю назад' },
   },
   {
@@ -127,8 +130,7 @@ export const curatedCollections: CuratedCollection[] = [
     title: 'Climate Signals',
     description:
       'Визуальные репортажи о климатических изменениях: устойчивые города, чистая энергия, экология.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=880&q=80',
+    imageUrl: valleyOverlook,
     stats: { items: 47, updated: 'Обновлено вчера' },
   },
 ]
@@ -162,8 +164,7 @@ export const blogSpotlight: BlogSpotlight = {
   title: 'Цвет как язык бренда: как визуально отличаться в 2025',
   description:
     'Исследование паттернов цвета в кампейнах от локальных брендов, подборка палитр и чек-лист по адаптации в соцсетях.',
-  imageUrl:
-    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80',
+  imageUrl: techInstallation,
   linkLabel: 'Читать исследование',
 }
 

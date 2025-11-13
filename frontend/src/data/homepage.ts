@@ -1,3 +1,16 @@
+import alpineLake from '../assets/images/alpine-lake.jpg'
+import aerialLandscape from '../assets/images/aerial-landscape.jpg'
+import creativeDesk from '../assets/images/creative-desk.jpg'
+import creativePortrait from '../assets/images/creative-portrait-1.jpg'
+import dawnTrails from '../assets/images/dawn-trails.jpg'
+import santoriniSunset from '../assets/images/santorini-sunset.jpg'
+import skylineOverlook from '../assets/images/skyline-overlook.jpg'
+import strategyWorkshop from '../assets/images/strategy-workshop.jpg'
+import streetStyle from '../assets/images/street-style.jpg'
+import techInstallation from '../assets/images/tech-installation.jpg'
+import valleyOverlook from '../assets/images/valley-overlook.jpg'
+import wildlifeStallion from '../assets/images/wildlife-stallion.jpg'
+
 export interface PhotoCard {
   id: string
   title: string
@@ -23,92 +36,89 @@ export interface BenefitItem {
   description: string
 }
 
-const unsplash = (id: string, width = 900) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=80`
-
 export const popularPhotos: PhotoCard[] = [
   {
     id: 'popular-1',
-    title: 'Гордость леса',
+    title: 'Горное утро',
     category: 'Природа',
-    orientation: 'portrait',
-    imageUrl: unsplash('photo-1500534314209-a25ddb2bd429', 640),
-    tags: ['лес', 'рассвет'],
+    orientation: 'landscape',
+    imageUrl: alpineLake,
+    tags: ['озеро', 'рассвет'],
   },
   {
     id: 'popular-2',
-    title: 'Городские линии',
-    category: 'Город',
-    orientation: 'landscape',
-    imageUrl: unsplash('photo-1469474968028-56623f02e42e'),
-    tags: ['архитектура', 'ночь'],
+    title: 'Вершины над облаками',
+    category: 'Путешествия',
+    orientation: 'portrait',
+    imageUrl: valleyOverlook,
+    tags: ['панорама', 'горы'],
   },
   {
     id: 'popular-3',
-    title: 'Свежий взгляд',
-    category: 'Люди',
-    orientation: 'portrait',
-    imageUrl: unsplash('photo-1521572267360-ee0c2909d518', 640),
-    tags: ['портрет', 'естественный свет'],
+    title: 'Террасы сверху',
+    category: 'Ландшафты',
+    orientation: 'landscape',
+    imageUrl: aerialLandscape,
+    tags: ['вид сверху', 'геометрия'],
   },
   {
     id: 'popular-4',
-    title: 'Неоновые идеи',
-    category: 'Технологии',
-    orientation: 'landscape',
-    imageUrl: unsplash('photo-1518770660439-4636190af475'),
-    tags: ['гаджеты', 'инновации'],
+    title: 'Сияние Санторини',
+    category: 'Город',
+    orientation: 'portrait',
+    imageUrl: santoriniSunset,
+    tags: ['эгейские купола', 'сумерки'],
   },
 ]
 
 export const newPhotos: PhotoCard[] = [
   {
     id: 'new-1',
-    title: 'Сочные цитрусы',
-    category: 'Еда и напитки',
-    orientation: 'landscape',
-    imageUrl: unsplash('photo-1498837167922-ddd27525d352'),
-    tags: ['кулинария', 'студия'],
+    title: 'Световые арки',
+    category: 'Технологии',
+    orientation: 'portrait',
+    imageUrl: techInstallation,
+    tags: ['неон', 'инсталляция'],
   },
   {
     id: 'new-2',
-    title: 'Городской шторм',
-    category: 'Город',
-    orientation: 'landscape',
-    imageUrl: unsplash('photo-1505739773366-8732e854ad81'),
-    tags: ['архитектура', 'дождь'],
+    title: 'План на неделю',
+    category: 'Лайфстайл',
+    orientation: 'portrait',
+    imageUrl: creativeDesk,
+    tags: ['планирование', 'flatlay'],
   },
   {
     id: 'new-3',
-    title: 'Этюд в розовых тонах',
-    category: 'Абстракции',
+    title: 'Галоп свободы',
+    category: 'Животные',
     orientation: 'portrait',
-    imageUrl: unsplash('photo-1526498460520-4c246339dccb', 640),
-    tags: ['паттерн', 'микро'],
+    imageUrl: wildlifeStallion,
+    tags: ['конь', 'динамика'],
   },
   {
     id: 'new-4',
-    title: 'Утренний кофе',
-    category: 'Еда и напитки',
-    orientation: 'landscape',
-    imageUrl: unsplash('photo-1495474472287-4d71bcdd2085'),
-    tags: ['напитки', 'атмосфера'],
+    title: 'Командный брифинг',
+    category: 'Люди',
+    orientation: 'portrait',
+    imageUrl: strategyWorkshop,
+    tags: ['совещание', 'команда'],
   },
   {
     id: 'new-5',
-    title: 'В горном тумане',
+    title: 'Туманная тропа',
     category: 'Природа',
-    orientation: 'landscape',
-    imageUrl: unsplash('photo-1500530855697-b586d89ba3ee'),
-    tags: ['горы', 'туман'],
+    orientation: 'portrait',
+    imageUrl: dawnTrails,
+    tags: ['лес', 'утро'],
   },
   {
     id: 'new-6',
-    title: 'Мощь технологий',
-    category: 'Технологии',
+    title: 'Огни большого города',
+    category: 'Город',
     orientation: 'portrait',
-    imageUrl: unsplash('photo-1517048676732-d65bc937f952', 640),
-    tags: ['компьютеры', 'свет'],
+    imageUrl: skylineOverlook,
+    tags: ['ночь', 'урбанистика'],
   },
 ]
 
@@ -125,27 +135,27 @@ export const categories = [
 export const authors: AuthorCard[] = [
   {
     id: 'author-1',
-    name: 'Анна Соколова',
-    specialty: 'Природа и путешествия',
-    avatarUrl: unsplash('photo-1524504388940-b1c1722653e1', 320),
+    name: 'Марина Колосова',
+    specialty: 'Портреты и lifestyle',
+    avatarUrl: creativePortrait,
     photosCount: 128,
     rating: 4.9,
   },
   {
     id: 'author-2',
-    name: 'Илья Комаров',
-    specialty: 'Город и архитектура',
-    avatarUrl: unsplash('photo-1544723795-3fb6469f5b39', 320),
+    name: 'Алексей Дёмин',
+    specialty: 'Уличная фотография',
+    avatarUrl: streetStyle,
     photosCount: 96,
     rating: 4.8,
   },
   {
     id: 'author-3',
-    name: 'Мария Ветрова',
-    specialty: 'Портреты и репортаж',
-    avatarUrl: unsplash('photo-1521572163474-6864f9cf17ab', 320),
-    photosCount: 142,
-    rating: 4.7,
+    name: 'Студия PlanLab',
+    specialty: 'Командные репортажи',
+    avatarUrl: strategyWorkshop,
+    photosCount: 74,
+    rating: 4.8,
   },
 ]
 

@@ -31,10 +31,15 @@ const props = defineProps<Props>()
         </div>
         <div class="hero__gallery" aria-label="Популярные фотографии">
           <div
-            v-for="photo in props.photos"
+            v-for="(photo, index) in props.photos.slice(0, 4)"
             :key="photo.id"
             class="hero__card"
-            :class="[`hero__card--${photo.orientation}`]"
+            :class="{
+              'hero__card--large-top-left': index === 0,
+              'hero__card--small-top-right': index === 1,
+              'hero__card--small-bottom-left': index === 2,
+              'hero__card--large-bottom-right': index === 3,
+            }"
           >
             <img
               :src="photo.imageUrl"
@@ -101,9 +106,10 @@ const props = defineProps<Props>()
 
 .hero__gallery {
   display: grid;
-  gap: 1.25rem;
+  gap: 1.1rem;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 220px;
+  grid-template-rows: repeat(7, minmax(70px, 1fr));
+  max-height: 520px;
 }
 
 .hero__card {
@@ -112,6 +118,26 @@ const props = defineProps<Props>()
   border-radius: 18px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.hero__card--large-top-left {
+  grid-column: 1;
+  grid-row: 1 / 5;
+}
+
+.hero__card--small-top-right {
+  grid-column: 2;
+  grid-row: 1 / 4;
+}
+
+.hero__card--small-bottom-left {
+  grid-column: 1;
+  grid-row: 5 / 8;
+}
+
+.hero__card--large-bottom-right {
+  grid-column: 2;
+  grid-row: 4 / 8;
 }
 
 .hero__card img {
@@ -136,14 +162,6 @@ const props = defineProps<Props>()
   font-size: 0.95rem;
 }
 
-.hero__card--portrait {
-  grid-row: span 2;
-}
-
-.hero__card--landscape {
-  grid-row: span 1;
-}
-
 @media (max-width: 1023px) {
   .hero {
     padding-top: calc(var(--header-height) + 2.5rem);
@@ -159,24 +177,25 @@ const props = defineProps<Props>()
   }
 
   .hero__gallery {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 200px;
     order: -1;
+    max-width: 100%;
+    max-height: 460px;
+    grid-template-rows: repeat(7, minmax(60px, 1fr));
+    gap: 0.85rem;
   }
 }
 
 @media (max-width: 640px) {
   .hero__gallery {
-    grid-template-columns: 1fr 1fr;
-    grid-auto-rows: 180px;
-  }
-
-  .hero__card--portrait {
-    grid-row: span 1;
+    gap: 0.7rem;
+    max-height: 400px;
+    grid-template-rows: repeat(7, minmax(50px, 1fr));
   }
 
   .hero__card-info {
     font-size: 0.8rem;
+    padding: 0.6rem 0.85rem;
+    inset: auto 12px 12px 12px;
   }
 }
 </style>
