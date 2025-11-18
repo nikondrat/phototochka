@@ -81,7 +81,7 @@ const router = createRouter({
   ],
 })
 
-// Защита роутов
+
 router.beforeEach((to, _from, next) => {
   if (to.meta.requiresAuth && !auth.isAuthenticated()) {
     next({ name: 'login', query: { redirect: to.fullPath } })

@@ -1,73 +1,69 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
-import PhotographerLayout from '../components/PhotographerLayout.vue'
+import { ref } from "vue";
+import { useRouter, RouterLink } from "vue-router";
+import PhotographerLayout from "../components/PhotographerLayout.vue";
 
-const router = useRouter()
+const router = useRouter();
 
-const title = ref('')
-const category = ref('')
-const tags = ref('')
-const price = ref('')
-const description = ref('')
-const selectedFile = ref<File | null>(null)
-const previewUrl = ref<string | null>(null)
-const isUploading = ref(false)
-const error = ref('')
+const title = ref("");
+const category = ref("");
+const tags = ref("");
+const price = ref("");
+const description = ref("");
+const selectedFile = ref<File | null>(null);
+const previewUrl = ref<string | null>(null);
+const isUploading = ref(false);
+const error = ref("");
 
 const categories = [
-  'Природа',
-  'Животные',
-  'Люди',
-  'Город',
-  'Еда и напитки',
-  'Технологии',
-  'Абстракции',
-  'Ландшафты',
-  'Лайфстайл',
-]
+  "Природа",
+  "Животные",
+  "Люди",
+  "Город",
+  "Еда и напитки",
+  "Технологии",
+  "Абстракции",
+  "Ландшафты",
+  "Лайфстайл",
+];
 
 function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
   if (file) {
-    selectedFile.value = file
-    const reader = new FileReader()
+    selectedFile.value = file;
+    const reader = new FileReader();
     reader.onload = (e) => {
-      previewUrl.value = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
+      previewUrl.value = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   }
 }
 
 function removeFile() {
-  selectedFile.value = null
-  previewUrl.value = null
+  selectedFile.value = null;
+  previewUrl.value = null;
 }
 
 async function handleSubmit(e: Event) {
-  e.preventDefault()
-  error.value = ''
+  e.preventDefault();
+  error.value = "";
 
   if (!title.value || !category.value || !selectedFile.value) {
-    error.value = 'Заполните все обязательные поля'
-    return
+    error.value = "Заполните все обязательные поля";
+    return;
   }
 
-  isUploading.value = true
+  isUploading.value = true;
 
   try {
-    // Имитация загрузки
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    // Здесь будет реальный API вызов
-    // await uploadPhoto({ title, category, tags, price, description, file: selectedFile.value })
-    
-    // После успешной загрузки перенаправляем на страницу фотографий
-    router.push('/photographer/photos')
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    router.push("/photographer/photos");
   } catch (err) {
-    error.value = 'Ошибка при загрузке фотографии. Попробуйте позже.'
+    error.value = "Ошибка при загрузке фотографии. Попробуйте позже.";
   } finally {
-    isUploading.value = false
+    isUploading.value = false;
   }
 }
 </script>
@@ -143,13 +139,19 @@ async function handleSubmit(e: Event) {
                     stroke-linejoin="round"
                   />
                 </svg>
-                <span class="upload-label__text">Перетащите файл сюда или нажмите для выбора</span>
+                <span class="upload-label__text"
+                  >Перетащите файл сюда или нажмите для выбора</span
+                >
                 <span class="upload-label__hint">JPG, PNG до 10 МБ</span>
               </label>
             </div>
             <div v-else class="upload-preview">
               <img :src="previewUrl" alt="Preview" />
-              <button type="button" class="upload-preview__remove" @click="removeFile">
+              <button
+                type="button"
+                class="upload-preview__remove"
+                @click="removeFile"
+              >
                 <svg
                   width="20"
                   height="20"
@@ -191,7 +193,12 @@ async function handleSubmit(e: Event) {
               <label for="category" class="form-label">
                 Категория <span class="form-label__required">*</span>
               </label>
-              <select id="category" v-model="category" class="form-input" required>
+              <select
+                id="category"
+                v-model="category"
+                class="form-input"
+                required
+              >
                 <option value="">Выберите категорию</option>
                 <option v-for="cat in categories" :key="cat" :value="cat">
                   {{ cat }}
@@ -488,4 +495,3 @@ async function handleSubmit(e: Event) {
   }
 }
 </style>
-

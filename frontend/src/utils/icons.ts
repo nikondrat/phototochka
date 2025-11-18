@@ -1,4 +1,3 @@
-// Система иконок для админки с возможностью динамического управления
 
 export interface IconConfig {
   name: string
@@ -6,7 +5,6 @@ export interface IconConfig {
   category?: string
 }
 
-// Базовые иконки для навигации
 export const adminIcons: Record<string, IconConfig> = {
   stats: {
     name: 'Статистика',
@@ -143,22 +141,22 @@ export const adminIcons: Record<string, IconConfig> = {
   },
 }
 
-// Функция для получения иконки
+
 export function getIcon(name: string): IconConfig | null {
   return adminIcons[name] || null
 }
 
-// Функция для добавления/обновления иконки (для динамического управления)
+
 export function setIcon(name: string, config: IconConfig): void {
   adminIcons[name] = config
 }
 
-// Функция для получения всех иконок по категории
+
 export function getIconsByCategory(category: string): IconConfig[] {
   return Object.values(adminIcons).filter((icon) => icon.category === category)
 }
 
-// Компонент для отображения иконки
+
 export function renderIcon(name: string, className = ''): string {
   const icon = getIcon(name)
   if (!icon) return ''

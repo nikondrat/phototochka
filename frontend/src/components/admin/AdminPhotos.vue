@@ -1,68 +1,69 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { popularPhotos, newPhotos, type PhotoCard } from '../../data/homepage'
-import AdminIcon from './AdminIcon.vue'
+import { ref, computed } from "vue";
+import { popularPhotos, newPhotos, type PhotoCard } from "../../data/homepage";
+import AdminIcon from "./AdminIcon.vue";
 
-// Инициализируем данные напрямую
-const allPhotos = ref<PhotoCard[]>([...popularPhotos, ...newPhotos])
-const searchQuery = ref('')
-const selectedCategory = ref<string>('all')
-const viewMode = ref<'grid' | 'list'>('grid')
+const allPhotos = ref<PhotoCard[]>([...popularPhotos, ...newPhotos]);
+const searchQuery = ref("");
+const selectedCategory = ref<string>("all");
+const viewMode = ref<"grid" | "list">("grid");
 
 const filteredPhotos = computed(() => {
-  let filtered = allPhotos.value
+  let filtered = allPhotos.value;
 
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
+    const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(
       (photo) =>
-        (photo.title || '').toLowerCase().includes(query) ||
-        (photo.category || '').toLowerCase().includes(query) ||
+        (photo.title || "").toLowerCase().includes(query) ||
+        (photo.category || "").toLowerCase().includes(query) ||
         photo.tags?.some((tag) => tag.toLowerCase().includes(query))
-    )
+    );
   }
 
-  if (selectedCategory.value !== 'all') {
-    filtered = filtered.filter((photo) => photo.category === selectedCategory.value)
+  if (selectedCategory.value !== "all") {
+    filtered = filtered.filter(
+      (photo) => photo.category === selectedCategory.value
+    );
   }
 
-  return filtered
-})
+  return filtered;
+});
 
 const categories = computed(() => {
-  const cats = new Set(allPhotos.value.map((p) => p.category))
-  return Array.from(cats).sort()
-})
+  const cats = new Set(allPhotos.value.map((p) => p.category));
+  return Array.from(cats).sort();
+});
 
 function deletePhoto(id: string) {
-  if (confirm('Удалить эту фотографию?')) {
-    allPhotos.value = allPhotos.value.filter((p) => p.id !== id)
+  if (confirm("Удалить эту фотографию?")) {
+    allPhotos.value = allPhotos.value.filter((p) => p.id !== id);
   }
 }
 
-const isEditing = ref<string | null>(null)
-const editingPhoto = ref<PhotoCard | null>(null)
+const isEditing = ref<string | null>(null);
+const editingPhoto = ref<PhotoCard | null>(null);
 
 function startEdit(photo: PhotoCard) {
-  isEditing.value = photo.id
-  editingPhoto.value = { ...photo }
+  isEditing.value = photo.id;
+  editingPhoto.value = { ...photo };
 }
 
 function saveEdit() {
-  if (!editingPhoto.value || !isEditing.value) return
+  if (!editingPhoto.value || !isEditing.value) return;
 
-  const index = allPhotos.value.findIndex((p) => p.id === isEditing.value)
+  const index = allPhotos.value.findIndex((p) => p.id === isEditing.value);
   if (index !== -1) {
-    allPhotos.value[index] = { ...editingPhoto.value }
+    allPhotos.value[index] = { ...editingPhoto.value };
   }
 
-  isEditing.value = null
-  editingPhoto.value = null
+  isEditing.value = null;
+  editingPhoto.value = null;
 }
 
 function cancelEdit() {
-  isEditing.value = null
-  editingPhoto.value = null
+  isEditing.value = null;
+  editingPhoto.value = null;
 }
 </script>
 
@@ -71,7 +72,13 @@ function cancelEdit() {
     <!-- Toolbar -->
     <div class="admin-photos__toolbar">
       <div class="admin-photos__search">
-        <svg class="admin-photos__search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <svg
+          class="admin-photos__search-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+        >
           <path
             d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16ZM18 18l-4.35-4.35"
             stroke="currentColor"
@@ -90,30 +97,94 @@ function cancelEdit() {
       <div class="admin-photos__filters">
         <select v-model="selectedCategory" class="admin-photos__select">
           <option value="all">Все категории</option>
-          <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+          <option v-for="cat in categories" :key="cat" :value="cat">
+            {{ cat }}
+          </option>
         </select>
         <div class="admin-photos__view-toggle">
           <button
-            :class="['admin-photos__view-btn', { 'admin-photos__view-btn--active': viewMode === 'grid' }]"
+            :class="[
+              'admin-photos__view-btn',
+              { 'admin-photos__view-btn--active': viewMode === 'grid' },
+            ]"
             @click="viewMode = 'grid'"
             aria-label="Сетка"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5" />
-              <rect x="11" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5" />
-              <rect x="1" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5" />
-              <rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5" />
+              <rect
+                x="1"
+                y="1"
+                width="6"
+                height="6"
+                rx="1"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <rect
+                x="11"
+                y="1"
+                width="6"
+                height="6"
+                rx="1"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <rect
+                x="1"
+                y="11"
+                width="6"
+                height="6"
+                rx="1"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <rect
+                x="11"
+                y="11"
+                width="6"
+                height="6"
+                rx="1"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
             </svg>
           </button>
           <button
-            :class="['admin-photos__view-btn', { 'admin-photos__view-btn--active': viewMode === 'list' }]"
+            :class="[
+              'admin-photos__view-btn',
+              { 'admin-photos__view-btn--active': viewMode === 'list' },
+            ]"
             @click="viewMode = 'list'"
             aria-label="Список"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="1" y="1" width="16" height="3" rx="1" stroke="currentColor" stroke-width="1.5" />
-              <rect x="1" y="7" width="16" height="3" rx="1" stroke="currentColor" stroke-width="1.5" />
-              <rect x="1" y="13" width="16" height="3" rx="1" stroke="currentColor" stroke-width="1.5" />
+              <rect
+                x="1"
+                y="1"
+                width="16"
+                height="3"
+                rx="1"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <rect
+                x="1"
+                y="7"
+                width="16"
+                height="3"
+                rx="1"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <rect
+                x="1"
+                y="13"
+                width="16"
+                height="3"
+                rx="1"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
             </svg>
           </button>
         </div>
@@ -132,7 +203,10 @@ function cancelEdit() {
 
     <!-- Photos Grid/List -->
     <div
-      :class="['admin-photos__container', { 'admin-photos__container--list': viewMode === 'list' }]"
+      :class="[
+        'admin-photos__container',
+        { 'admin-photos__container--list': viewMode === 'list' },
+      ]"
     >
       <div
         v-for="photo in filteredPhotos"
@@ -159,26 +233,48 @@ function cancelEdit() {
           </div>
         </div>
         <div class="photo-card__body">
-          <div v-if="isEditing === photo.id && editingPhoto" class="photo-card__edit">
+          <div
+            v-if="isEditing === photo.id && editingPhoto"
+            class="photo-card__edit"
+          >
             <input
               v-model="editingPhoto.title"
               type="text"
               class="admin-input admin-input--small"
               placeholder="Название"
             />
-            <select v-model="editingPhoto.category" class="admin-select admin-select--small">
-              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+            <select
+              v-model="editingPhoto.category"
+              class="admin-select admin-select--small"
+            >
+              <option v-for="cat in categories" :key="cat" :value="cat">
+                {{ cat }}
+              </option>
             </select>
             <div class="photo-card__actions">
-              <button class="btn btn--primary btn--small" @click="saveEdit">Сохранить</button>
-              <button class="btn btn--ghost btn--small" @click="cancelEdit">Отмена</button>
+              <button class="btn btn--primary btn--small" @click="saveEdit">
+                Сохранить
+              </button>
+              <button class="btn btn--ghost btn--small" @click="cancelEdit">
+                Отмена
+              </button>
             </div>
           </div>
           <div v-else>
-            <h3 class="photo-card__title">{{ photo.title || 'Без названия' }}</h3>
+            <h3 class="photo-card__title">
+              {{ photo.title || "Без названия" }}
+            </h3>
             <p class="photo-card__category">{{ photo.category }}</p>
-            <div v-if="photo.tags && photo.tags.length > 0" class="photo-card__tags">
-              <span v-for="tag in photo.tags" :key="tag" class="tag tag--small">{{ tag }}</span>
+            <div
+              v-if="photo.tags && photo.tags.length > 0"
+              class="photo-card__tags"
+            >
+              <span
+                v-for="tag in photo.tags"
+                :key="tag"
+                class="tag tag--small"
+                >{{ tag }}</span
+              >
             </div>
           </div>
         </div>

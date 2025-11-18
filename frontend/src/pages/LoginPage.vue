@@ -1,47 +1,45 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { auth } from '../utils/auth'
-import creativePortrait from '../assets/images/creative-portrait-1.jpg'
+import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { auth } from "../utils/auth";
+import creativePortrait from "../assets/images/creative-portrait-1.jpg";
 
-const router = useRouter()
-const route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
-const email = ref('')
-const password = ref('')
-const isLoading = ref(false)
-const error = ref('')
-const showPassword = ref(false)
+const email = ref("");
+const password = ref("");
+const isLoading = ref(false);
+const error = ref("");
+const showPassword = ref(false);
 
 async function handleSubmit(e: Event) {
-  e.preventDefault()
-  error.value = ''
-  isLoading.value = true
+  e.preventDefault();
+  error.value = "";
+  isLoading.value = true;
 
-  // Валидация
   if (!email.value || !password.value) {
-    error.value = 'Пожалуйста, заполните все поля'
-    isLoading.value = false
-    return
+    error.value = "Пожалуйста, заполните все поля";
+    isLoading.value = false;
+    return;
   }
 
-  if (!email.value.includes('@')) {
-    error.value = 'Введите корректный email адрес'
-    isLoading.value = false
-    return
+  if (!email.value.includes("@")) {
+    error.value = "Введите корректный email адрес";
+    isLoading.value = false;
+    return;
   }
 
-  // Авторизация
   try {
-    await auth.login(email.value, password.value)
-    
-    // После успешной авторизации перенаправляем
-    const redirect = (route.query.redirect as string) || '/'
-    router.push(redirect)
+    await auth.login(email.value, password.value);
+
+    const redirect = (route.query.redirect as string) || "/";
+    router.push(redirect);
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Неверный email или пароль'
+    error.value =
+      err instanceof Error ? err.message : "Неверный email или пароль";
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 </script>
@@ -188,7 +186,9 @@ async function handleSubmit(e: Event) {
                   type="button"
                   class="form-toggle-password"
                   @click="showPassword = !showPassword"
-                  :aria-label="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
+                  :aria-label="
+                    showPassword ? 'Скрыть пароль' : 'Показать пароль'
+                  "
                 >
                   <svg
                     v-if="showPassword"
@@ -238,7 +238,9 @@ async function handleSubmit(e: Event) {
           <div class="auth-footer">
             <p class="auth-footer__text">
               Нет аккаунта?
-              <RouterLink to="/register" class="auth-link">Создать аккаунт</RouterLink>
+              <RouterLink to="/register" class="auth-link"
+                >Создать аккаунт</RouterLink
+              >
             </p>
             <RouterLink to="/help" class="auth-link auth-link--muted">
               Забыли пароль?
@@ -305,7 +307,7 @@ async function handleSubmit(e: Event) {
 }
 
 .auth-visual__logo {
-  font-family: 'Playfair Display', 'Inter', serif;
+  font-family: "Playfair Display", "Inter", serif;
   font-weight: 700;
   font-size: 1.8rem;
   letter-spacing: 0.02em;
@@ -330,7 +332,7 @@ async function handleSubmit(e: Event) {
 }
 
 .auth-visual__quote-text {
-  font-family: 'Playfair Display', 'Inter', serif;
+  font-family: "Playfair Display", "Inter", serif;
   font-size: clamp(1.75rem, 3vw, 2.5rem);
   font-weight: 600;
   line-height: 1.3;
@@ -369,7 +371,7 @@ async function handleSubmit(e: Event) {
 
 .auth-title {
   margin: 0;
-  font-family: 'Playfair Display', 'Inter', serif;
+  font-family: "Playfair Display", "Inter", serif;
   font-size: clamp(2rem, 4vw, 2.5rem);
   font-weight: 700;
   line-height: 1.2;
@@ -588,4 +590,3 @@ async function handleSubmit(e: Event) {
   }
 }
 </style>
-

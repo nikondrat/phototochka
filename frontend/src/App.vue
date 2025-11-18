@@ -7,12 +7,10 @@ import SiteFooter from "./components/SiteFooter.vue";
 
 const route = useRoute();
 
-// Определяем, является ли текущая страница страницей авторизации
 const isAuthPage = computed(() => {
   return route.name === "login" || route.name === "register";
 });
 
-// Определяем, является ли текущая страница страницей админки или фотографа
 const isAdminOrPhotographerPage = computed(() => {
   const routeName = route.name as string;
   return (
@@ -22,7 +20,6 @@ const isAdminOrPhotographerPage = computed(() => {
   );
 });
 
-// Показываем хедер и футер только на обычных страницах
 const showHeaderAndFooter = computed(() => {
   return !isAuthPage.value && !isAdminOrPhotographerPage.value;
 });

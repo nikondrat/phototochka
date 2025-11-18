@@ -10,8 +10,6 @@ const STORAGE_KEY = 'fototochka_auth'
 export const auth = {
   login(email: string, password: string): Promise<User> {
     return new Promise((resolve, reject) => {
-      // Имитация проверки учетных данных
-      // Для демо: admin@admin.com / admin123
       setTimeout(() => {
         if (email === 'admin@admin.com' && password === 'admin123') {
           const user: User = {

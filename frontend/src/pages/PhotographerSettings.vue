@@ -47,17 +47,13 @@ async function handleSave(e: Event) {
   saveSuccess.value = false;
 
   try {
-    // Имитация сохранения
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    // Здесь будет реальный API вызов
-    // await updateProfile({ name, email, specialty, bio, website, socialInstagram, socialVk, avatarUrl, notifications, privacy })
 
     saveSuccess.value = true;
     setTimeout(() => {
       saveSuccess.value = false;
     }, 3000);
   } catch (err) {
-    // Обработка ошибки
   } finally {
     isSaving.value = false;
   }
@@ -67,7 +63,6 @@ async function handleSave(e: Event) {
 <template>
   <PhotographerLayout>
     <div class="settings-page">
-
       <form @submit="handleSave" class="settings-form">
         <!-- Профиль -->
         <section class="settings-section">

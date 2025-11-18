@@ -1,61 +1,61 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import santoriniSunset from '../assets/images/santorini-sunset.jpg'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import santoriniSunset from "../assets/images/santorini-sunset.jpg";
 
-const router = useRouter()
+const router = useRouter();
 
-const name = ref('')
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const isLoading = ref(false)
-const error = ref('')
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
+const name = ref("");
+const email = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+const isLoading = ref(false);
+const error = ref("");
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 async function handleSubmit(e: Event) {
-  e.preventDefault()
-  error.value = ''
-  isLoading.value = true
+  e.preventDefault();
+  error.value = "";
+  isLoading.value = true;
 
-  // Валидация
-  if (!name.value || !email.value || !password.value || !confirmPassword.value) {
-    error.value = 'Пожалуйста, заполните все поля'
-    isLoading.value = false
-    return
+  if (
+    !name.value ||
+    !email.value ||
+    !password.value ||
+    !confirmPassword.value
+  ) {
+    error.value = "Пожалуйста, заполните все поля";
+    isLoading.value = false;
+    return;
   }
 
-  if (!email.value.includes('@')) {
-    error.value = 'Введите корректный email адрес'
-    isLoading.value = false
-    return
+  if (!email.value.includes("@")) {
+    error.value = "Введите корректный email адрес";
+    isLoading.value = false;
+    return;
   }
 
   if (password.value.length < 8) {
-    error.value = 'Пароль должен содержать минимум 8 символов'
-    isLoading.value = false
-    return
+    error.value = "Пароль должен содержать минимум 8 символов";
+    isLoading.value = false;
+    return;
   }
 
   if (password.value !== confirmPassword.value) {
-    error.value = 'Пароли не совпадают'
-    isLoading.value = false
-    return
+    error.value = "Пароли не совпадают";
+    isLoading.value = false;
+    return;
   }
 
-  // Имитация регистрации
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    // Здесь будет реальный API вызов
-    // const response = await authApi.register({ name: name.value, email: email.value, password: password.value })
-    
-    // После успешной регистрации перенаправляем на страницу входа
-    router.push('/login')
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    router.push("/login");
   } catch (err) {
-    error.value = 'Ошибка регистрации. Попробуйте позже'
+    error.value = "Ошибка регистрации. Попробуйте позже";
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 </script>
@@ -82,6 +82,7 @@ async function handleSubmit(e: Event) {
           alt="Закат на Санторини"
           class="auth-visual__image"
           loading="eager"
+          ffffff
         />
       </div>
 
@@ -91,7 +92,8 @@ async function handleSubmit(e: Event) {
           <div class="auth-header">
             <h1 class="auth-title">Создать аккаунт</h1>
             <p class="auth-subtitle">
-              Зарегистрируйтесь, чтобы начать публиковать свои работы и находить идеальные кадры
+              Зарегистрируйтесь, чтобы начать публиковать свои работы и находить
+              идеальные кадры
             </p>
           </div>
 
@@ -242,7 +244,9 @@ async function handleSubmit(e: Event) {
                   type="button"
                   class="form-toggle-password"
                   @click="showPassword = !showPassword"
-                  :aria-label="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
+                  :aria-label="
+                    showPassword ? 'Скрыть пароль' : 'Показать пароль'
+                  "
                 >
                   <svg
                     v-if="showPassword"
@@ -275,7 +279,9 @@ async function handleSubmit(e: Event) {
             </div>
 
             <div class="form-group">
-              <label for="confirmPassword" class="form-label">Подтвердите пароль</label>
+              <label for="confirmPassword" class="form-label"
+                >Подтвердите пароль</label
+              >
               <div class="form-input-wrapper">
                 <svg
                   class="form-input-icon"
@@ -314,7 +320,9 @@ async function handleSubmit(e: Event) {
                   type="button"
                   class="form-toggle-password"
                   @click="showConfirmPassword = !showConfirmPassword"
-                  :aria-label="showConfirmPassword ? 'Скрыть пароль' : 'Показать пароль'"
+                  :aria-label="
+                    showConfirmPassword ? 'Скрыть пароль' : 'Показать пароль'
+                  "
                 >
                   <svg
                     v-if="showConfirmPassword"
@@ -428,7 +436,7 @@ async function handleSubmit(e: Event) {
 }
 
 .auth-visual__logo {
-  font-family: 'Playfair Display', 'Inter', serif;
+  font-family: "Playfair Display", "Inter", serif;
   font-weight: 700;
   font-size: 1.8rem;
   letter-spacing: 0.02em;
@@ -453,7 +461,7 @@ async function handleSubmit(e: Event) {
 }
 
 .auth-visual__quote-text {
-  font-family: 'Playfair Display', 'Inter', serif;
+  font-family: "Playfair Display", "Inter", serif;
   font-size: clamp(1.75rem, 3vw, 2.5rem);
   font-weight: 600;
   line-height: 1.3;
@@ -492,7 +500,7 @@ async function handleSubmit(e: Event) {
 
 .auth-title {
   margin: 0;
-  font-family: 'Playfair Display', 'Inter', serif;
+  font-family: "Playfair Display", "Inter", serif;
   font-size: clamp(2rem, 4vw, 2.5rem);
   font-weight: 700;
   line-height: 1.2;

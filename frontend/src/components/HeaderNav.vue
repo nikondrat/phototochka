@@ -23,12 +23,14 @@ const navLinks: NavLink[] = [
 ];
 
 const currentUser = computed(() => userState.value);
-const isAdmin = computed(() => userState.value?.role === 'admin');
+const isAdmin = computed(() => userState.value?.role === "admin");
 
-// Обновляем состояние пользователя при изменении роута (например, после логина)
-watch(() => route.path, () => {
-  userState.value = auth.getCurrentUser();
-});
+watch(
+  () => route.path,
+  () => {
+    userState.value = auth.getCurrentUser();
+  }
+);
 
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value;
@@ -50,7 +52,7 @@ function navigate(link: NavLink) {
 function handleLogout() {
   auth.logout();
   userState.value = null;
-  router.push('/');
+  router.push("/");
   closeMenu();
 }
 
@@ -103,13 +105,17 @@ onUnmounted(() => {
 
       <div class="header__actions">
         <template v-if="currentUser">
-          <RouterLink v-if="isAdmin" class="btn btn--ghost" to="/admin">Админка</RouterLink>
+          <RouterLink v-if="isAdmin" class="btn btn--ghost" to="/admin"
+            >Админка</RouterLink
+          >
           <span class="header__user">{{ currentUser.name }}</span>
           <button class="btn btn--ghost" @click="handleLogout">Выйти</button>
         </template>
         <template v-else>
           <RouterLink class="btn btn--ghost" to="/login">Войти</RouterLink>
-          <RouterLink class="btn btn--primary" to="/register">Стать автором</RouterLink>
+          <RouterLink class="btn btn--primary" to="/register"
+            >Стать автором</RouterLink
+          >
         </template>
       </div>
 
@@ -187,7 +193,9 @@ onUnmounted(() => {
                 type="button"
                 :class="[
                   'header__mobile-link',
-                  { 'header__mobile-link--active': route.name === link.to.name },
+                  {
+                    'header__mobile-link--active': route.name === link.to.name,
+                  },
                 ]"
                 @click="navigate(link)"
               >
@@ -198,15 +206,31 @@ onUnmounted(() => {
 
             <div class="header__mobile-actions">
               <template v-if="currentUser">
-                <RouterLink v-if="isAdmin" class="btn btn--ghost" to="/admin" @click="closeMenu">
+                <RouterLink
+                  v-if="isAdmin"
+                  class="btn btn--ghost"
+                  to="/admin"
+                  @click="closeMenu"
+                >
                   Админка
                 </RouterLink>
                 <span class="header__mobile-user">{{ currentUser.name }}</span>
-                <button class="btn btn--ghost" @click="handleLogout">Выйти</button>
+                <button class="btn btn--ghost" @click="handleLogout">
+                  Выйти
+                </button>
               </template>
               <template v-else>
-                <RouterLink class="btn btn--ghost" to="/login" @click="closeMenu">Войти</RouterLink>
-                <RouterLink class="btn btn--primary" to="/register" @click="closeMenu">
+                <RouterLink
+                  class="btn btn--ghost"
+                  to="/login"
+                  @click="closeMenu"
+                  >Войти</RouterLink
+                >
+                <RouterLink
+                  class="btn btn--primary"
+                  to="/register"
+                  @click="closeMenu"
+                >
                   Стать автором
                 </RouterLink>
               </template>
