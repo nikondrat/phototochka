@@ -12,6 +12,12 @@ type QuickFilter = {
 
 const props = defineProps<Props>()
 
+const emit = defineEmits<{
+  'category-select': [category: string]
+  'search': [query: string]
+  'orientation-select': [orientation: string]
+}>()
+
 const orientationFilters: QuickFilter[] = [
   { id: 'orientation-horizontal', label: 'Горизонтальная' },
   { id: 'orientation-vertical', label: 'Вертикальная' },
@@ -25,9 +31,22 @@ const extraFilters: QuickFilter[] = [
 ]
 
 const showAdvanced = ref(false)
+const searchQuery = ref('')
 
 function toggleAdvanced() {
   showAdvanced.value = !showAdvanced.value
+}
+
+function handleCategoryClick(category: string) {
+  emit('category-select', category)
+}
+
+function handleSearch() {
+  emit('search', searchQuery.value)
+}
+
+function handleOrientationClick(orientation: string) {
+  emit('orientation-select', orientation)
 }
 </script>
 
@@ -52,12 +71,14 @@ function toggleAdvanced() {
         <div class="search__controls">
           <div class="search__input-wrap">
             <input
+              v-model="searchQuery"
               class="search__input"
               type="search"
               placeholder="Введите тему, тег или автора"
               aria-label="Поиск по сайту"
+              @keyup.enter="handleSearch"
             />
-            <button class="btn btn--primary search__submit" type="button">Искать</button>
+            <button class="btn btn--primary search__submit" type="button" @click="handleSearch">Искать</button>
           </div>
 
           <div class="search__filters">
@@ -69,6 +90,7 @@ function toggleAdvanced() {
                   :key="category"
                   type="button"
                   class="search__chip"
+                  @click="handleCategoryClick(category)"
                 >
                   {{ category }}
                 </button>
@@ -85,6 +107,7 @@ function toggleAdvanced() {
                       :key="item.id"
                       type="button"
                       class="search__chip"
+                      @click="handleOrientationClick(item.id)"
                     >
                       {{ item.label }}
                     </button>

@@ -19,6 +19,16 @@ const router = createRouter({
       meta: { layout: 'default' },
     },
     {
+      path: '/catalog/photos',
+      name: 'catalog-photos',
+      component: () => import('../pages/CatalogPhotosPage.vue'),
+    },
+    {
+      path: '/photo/:id',
+      name: 'photo-detail',
+      component: () => import('../pages/PhotoDetailPage.vue'),
+    },
+    {
       path: '/blog',
       name: 'blog',
       component: () => import('../pages/BlogPage.vue'),

@@ -19,7 +19,7 @@ interface Props {
   showActions?: boolean
   showStats?: boolean
   showStatus?: boolean
-  variant?: 'default' | 'compact'
+  variant?: 'default' | 'compact' | 'category' | 'collection'
 }
 
 withDefaults(defineProps<Props>(), {
@@ -81,7 +81,7 @@ function getStatusClass(status: string) {
     </div>
     <div class="photo-card__body">
       <h3 class="photo-card__title">{{ photo.title }}</h3>
-      <p class="photo-card__category">{{ photo.category }}</p>
+      <p v-if="variant !== 'category' && photo.category" class="photo-card__category">{{ photo.category }}</p>
       <div v-if="showStats && (photo.views !== undefined || photo.downloads !== undefined || photo.earnings !== undefined)" class="photo-card__stats">
         <div v-if="photo.views !== undefined" class="photo-card__stat">
           <AdminIcon name="view" :size="16" />
@@ -99,7 +99,11 @@ function getStatusClass(status: string) {
       <div v-if="photo.tags && photo.tags.length > 0" class="photo-card__tags">
         <span v-for="tag in photo.tags" :key="tag" class="photo-card__tag">{{ tag }}</span>
       </div>
-      <p v-if="photo.uploadedAt" class="photo-card__date">Загружено {{ photo.uploadedAt }}</p>
+      <p v-if="variant !== 'category' && photo.uploadedAt" class="photo-card__date" :class="{ 'photo-card__date--collection': variant === 'collection' }">
+        <template v-if="variant === 'collection'">{{ photo.uploadedAt }}</template>
+        <template v-else>Загружено {{ photo.uploadedAt }}</template>
+      </p>
+      <span v-if="variant === 'collection'" class="photo-card__link">Открыть подборку →</span>
     </div>
   </div>
 </template>
@@ -114,6 +118,7 @@ function getStatusClass(status: string) {
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .photo-card:hover {
@@ -131,6 +136,10 @@ function getStatusClass(status: string) {
 
 .photo-card--compact .photo-card__image {
   aspect-ratio: 4 / 3;
+}
+
+.photo-card--category {
+  min-height: auto;
 }
 
 .photo-card__image img {
@@ -224,6 +233,7 @@ function getStatusClass(status: string) {
   flex-direction: column;
   gap: 0.75rem;
   flex: 1;
+  min-height: 200px;
 }
 
 .photo-card__title {
@@ -282,6 +292,17 @@ function getStatusClass(status: string) {
   font-size: 0.8125rem;
   color: var(--color-text-muted);
   font-weight: 500;
+}
+
+.photo-card__date--collection {
+  margin-bottom: 0.5rem;
+}
+
+.photo-card__link {
+  font-weight: 600;
+  color: var(--color-accent);
+  margin-top: auto;
+  display: inline-block;
 }
 
 @media (max-width: 768px) {

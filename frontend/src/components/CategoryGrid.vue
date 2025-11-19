@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
+
 interface Props {
   categories: string[]
 }
@@ -19,15 +21,15 @@ const props = defineProps<Props>()
       </div>
 
       <div class="categories__grid">
-        <a
+        <RouterLink
           v-for="category in props.categories"
           :key="category"
           class="categories__card"
-          href="#catalog"
+          :to="{ path: '/catalog/photos', query: { category } }"
         >
           <span class="categories__label">{{ category }}</span>
           <span class="categories__arrow" aria-hidden="true">→</span>
-        </a>
+        </RouterLink>
       </div>
     </div>
   </section>

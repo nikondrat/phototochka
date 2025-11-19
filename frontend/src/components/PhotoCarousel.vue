@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import type { PhotoCard } from '../data/homepage'
 
 interface Props {
@@ -13,6 +14,23 @@ interface Props {
 const props = defineProps<Props>()
 
 const scroller = ref<HTMLDivElement | null>(null)
+
+// Маппинг ID из homepage на ID из photos.ts
+function getPhotoId(homepageId: string): string {
+  const mapping: Record<string, string> = {
+    'popular-1': 'photo-1',
+    'popular-2': 'photo-2',
+    'popular-3': 'photo-3',
+    'popular-4': 'photo-4',
+    'new-1': 'photo-5',
+    'new-2': 'photo-6',
+    'new-3': 'photo-7',
+    'new-4': 'photo-8',
+    'new-5': 'photo-9',
+    'new-6': 'photo-10',
+  }
+  return mapping[homepageId] || homepageId
+}
 
 function scroll(direction: 'prev' | 'next') {
   const container = scroller.value
@@ -45,9 +63,10 @@ function scroll(direction: 'prev' | 'next') {
 
       <div class="carousel__wrapper">
         <div ref="scroller" class="carousel__scroller" role="list">
-          <article
+          <RouterLink
             v-for="photo in props.photos"
             :key="photo.id"
+            :to="`/photo/${getPhotoId(photo.id)}`"
             data-card
             class="carousel__card"
             role="listitem"
@@ -62,7 +81,7 @@ function scroll(direction: 'prev' | 'next') {
                 <span v-for="tag in photo.tags" :key="tag" class="tag">#{{ tag }}</span>
               </div>
             </div>
-          </article>
+          </RouterLink>
         </div>
       </div>
     </div>
@@ -153,6 +172,14 @@ function scroll(direction: 'prev' | 'next') {
   overflow: hidden;
   display: grid;
   scroll-snap-align: start;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.carousel__card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 44px rgba(16, 185, 129, 0.15);
 }
 
 .carousel__image-wrapper {

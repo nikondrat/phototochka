@@ -1,5 +1,55 @@
 <script setup lang="ts">
+import { onMounted, watch } from 'vue'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
+import PhotoCard from '../components/PhotoCard.vue'
 import { catalogCategories, curatedCollections, workflowSteps } from '../data/pages'
+
+const route = useRoute()
+const router = useRouter()
+
+// Маппинг ID категорий на русские названия
+const categoryIdToTitle: Record<string, string> = {
+  'editorial': 'Редакционные подборки',
+  'commercial': 'Коммерческие лицензии',
+  'authentic': 'Аутентичные истории',
+}
+
+// Обработка query параметров для перенаправления на /catalog/photos
+function handleQueryParams() {
+  const query = route.query
+  
+  if (query.focus) {
+    // Перенаправляем на страницу каталога с фильтром по категории
+    const categoryId = query.focus as string
+    const categoryTitle = categoryIdToTitle[categoryId] || categoryId
+    router.replace({
+      path: '/catalog/photos',
+      query: { category: categoryTitle }
+    })
+    return
+  }
+  
+  if (query.collection) {
+    // Перенаправляем на страницу каталога с фильтром по коллекции
+    router.replace({
+      path: '/catalog/photos',
+      query: { collection: query.collection as string }
+    })
+    return
+  }
+}
+
+onMounted(() => {
+  handleQueryParams()
+})
+
+watch(
+  () => route.query,
+  () => {
+    handleQueryParams()
+  },
+  { immediate: false }
+)
 </script>
 
 <template>
@@ -43,7 +93,12 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
         </div>
 
         <div class="catalog-cards">
-          <article v-for="category in catalogCategories" :key="category.id" class="catalog-card">
+          <RouterLink
+            v-for="category in catalogCategories"
+            :key="category.id"
+            :to="`/catalog/photos?category=${category.title}`"
+            class="catalog-card"
+          >
             <div class="catalog-card__image">
               <img :src="category.coverUrl" :alt="category.title" loading="lazy" decoding="async" />
             </div>
@@ -53,11 +108,9 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
               <div class="catalog-card__tags">
                 <span v-for="tag in category.tags" :key="tag" class="tag">#{{ tag }}</span>
               </div>
-              <RouterLink class="catalog-card__link" :to="`/catalog?focus=${category.id}`">
-                Открыть коллекцию →
-              </RouterLink>
+              <span class="catalog-card__link">Открыть коллекцию →</span>
             </div>
-          </article>
+          </RouterLink>
         </div>
       </div>
     </section>
@@ -73,20 +126,23 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
         </div>
 
         <div class="catalog-collections">
-          <article v-for="collection in curatedCollections" :key="collection.id" class="collection-card">
-            <img :src="collection.imageUrl" :alt="collection.title" loading="lazy" decoding="async" />
-            <div class="collection-card__body">
-              <div class="collection-card__meta">
-                <span>{{ collection.stats.items }} объектов</span>
-                <span>{{ collection.stats.updated }}</span>
-              </div>
-              <h3>{{ collection.title }}</h3>
-              <p>{{ collection.description }}</p>
-              <RouterLink class="collection-card__link" :to="`/catalog?collection=${collection.id}`">
-                Открыть подборку →
-              </RouterLink>
-            </div>
-          </article>
+          <RouterLink
+            v-for="collection in curatedCollections"
+            :key="collection.id"
+            :to="`/catalog/photos?collection=${collection.id}`"
+            class="collection-card-link"
+          >
+            <PhotoCard
+              :photo="{
+                id: collection.id,
+                title: collection.title,
+                category: `${collection.stats.items} объектов • ${collection.stats.updated}`,
+                imageUrl: collection.imageUrl,
+                uploadedAt: collection.description,
+              }"
+              variant="collection"
+            />
+          </RouterLink>
         </div>
       </div>
     </section>
@@ -201,6 +257,15 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
   background: #ffffff;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
   height: 100%;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.catalog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 .catalog-card__image {
@@ -217,6 +282,11 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.catalog-card:hover .catalog-card__image img {
+  transform: scale(1.05);
 }
 
 .catalog-card__body {
@@ -255,47 +325,20 @@ import { catalogCategories, curatedCollections, workflowSteps } from '../data/pa
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
-.collection-card {
-  border-radius: 28px;
-  overflow: hidden;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: #ffffff;
-  display: grid;
-  box-shadow: 0 22px 44px rgba(15, 23, 42, 0.1);
+.collection-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.collection-card img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
+.collection-card-link:hover {
+  transform: translateY(-4px);
 }
 
-.collection-card__body {
-  padding: 1.65rem 1.8rem 1.95rem;
-  display: grid;
-  gap: 0.9rem;
-}
-
-.collection-card__meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-
-.collection-card__body h3 {
-  margin: 0;
-  font-size: 1.25rem;
-}
-
-.collection-card__body p {
-  margin: 0;
-  color: var(--color-text-muted);
-}
-
-.collection-card__link {
-  font-weight: 600;
-  color: var(--color-accent);
+.collection-card-link:hover :deep(.photo-card) {
+  box-shadow: 0 24px 48px rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 .workflow {
