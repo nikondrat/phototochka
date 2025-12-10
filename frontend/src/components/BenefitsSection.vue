@@ -37,7 +37,7 @@ const props = defineProps<Props>()
 
 <style scoped>
 .benefits {
-  background: var(--color-surface);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(236, 253, 245, 0.35) 45%, #ffffff 100%);
 }
 
 .benefits__grid {

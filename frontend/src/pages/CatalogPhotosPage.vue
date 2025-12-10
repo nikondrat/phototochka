@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import CatalogSearch from '../components/CatalogSearch.vue'
@@ -10,6 +10,9 @@ import { categories } from '../data/homepage'
 const route = useRoute()
 const router = useRouter()
 
+const FAVORITES_KEY = 'ft_favorites'
+const FILTERS_KEY = 'ft_saved_filters'
+
 const photos = ref<Photo[]>([])
 const loading = ref(false)
 const hasMore = ref(true)
@@ -18,6 +21,9 @@ const totalPhotos = ref(0)
 const searchQuery = ref('')
 const selectedCategory = ref<string | null>(null)
 const selectedOrientation = ref<'landscape' | 'portrait' | 'square' | null>(null)
+const favoriteIds = ref<string[]>([])
+const showOnlyFavorites = ref(false)
+const savedFilters = ref<{ category?: string | null; search?: string; orientation?: string | null } | null>(null)
 
 const loadTriggerRef = ref<HTMLElement | null>(null)
 const observer = ref<IntersectionObserver | null>(null)
@@ -119,6 +125,67 @@ function applyFilters() {
   })
 }
 
+function saveFiltersToStorage() {
+  const payload = {
+    category: selectedCategory.value,
+    search: searchQuery.value,
+    orientation: selectedOrientation.value,
+  }
+  localStorage.setItem(FILTERS_KEY, JSON.stringify(payload))
+  savedFilters.value = payload
+}
+
+function restoreFiltersFromStorage() {
+  const raw = localStorage.getItem(FILTERS_KEY)
+  if (!raw) return
+  try {
+    const parsed = JSON.parse(raw)
+    selectedCategory.value = parsed.category || null
+    searchQuery.value = parsed.search || ''
+    selectedOrientation.value = parsed.orientation || null
+    applyFilters()
+  } catch (e) {
+    console.error('Не удалось восстановить фильтры', e)
+  }
+}
+
+function loadSavedFiltersFlag() {
+  const raw = localStorage.getItem(FILTERS_KEY)
+  if (!raw) return
+  try {
+    savedFilters.value = JSON.parse(raw)
+  } catch {
+    savedFilters.value = null
+  }
+}
+
+function loadFavorites() {
+  const raw = localStorage.getItem(FAVORITES_KEY)
+  if (!raw) return
+  try {
+    favoriteIds.value = JSON.parse(raw)
+  } catch {
+    favoriteIds.value = []
+  }
+}
+
+function persistFavorites() {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteIds.value))
+}
+
+function toggleFavorite(id: string) {
+  const exists = favoriteIds.value.includes(id)
+  favoriteIds.value = exists
+    ? favoriteIds.value.filter((f) => f !== id)
+    : [...favoriteIds.value, id]
+  persistFavorites()
+}
+
+const visiblePhotos = computed(() => {
+  if (!showOnlyFavorites.value) return photos.value
+  return photos.value.filter((p) => favoriteIds.value.includes(p.id))
+})
+
 // Обработка выбора категории
 function handleCategorySelect(category: string) {
   // Если категория уже выбрана, снимаем выбор, иначе устанавливаем
@@ -194,6 +261,8 @@ watch(
 
 onMounted(() => {
   initFromQuery()
+  loadFavorites()
+  loadSavedFiltersFlag()
   loadPhotos(1)
   
   // Настройка бесконечного скролла после первой загрузки
@@ -222,6 +291,17 @@ onUnmounted(() => {
               {{ totalPhotos }} {{ totalPhotos === 1 ? 'фотография' : totalPhotos < 5 ? 'фотографии' : 'фотографий' }}
             </p>
           </div>
+          <div class="catalog-photos-header__actions">
+            <button class="pill-btn" type="button" @click="saveFiltersToStorage">
+              Сохранить фильтры
+            </button>
+            <button class="pill-btn" type="button" :disabled="!savedFilters" @click="restoreFiltersFromStorage">
+              Восстановить
+            </button>
+            <button class="pill-btn pill-btn--ghost" type="button" :class="{ 'pill-btn--active': showOnlyFavorites }" @click="showOnlyFavorites = !showOnlyFavorites">
+              {{ showOnlyFavorites ? 'Показать все' : 'Только избранное' }}
+            </button>
+          </div>
         </div>
 
         <CatalogSearch
@@ -236,7 +316,12 @@ onUnmounted(() => {
 
     <section class="catalog-photos-content">
       <div class="container">
-          <PhotoGrid :photos="photos" :loading="loading && photos.length === 0" />
+          <PhotoGrid
+            :photos="visiblePhotos"
+            :favorite-ids="favoriteIds"
+            :loading="loading && photos.length === 0"
+            @toggle-favorite="toggleFavorite"
+          />
 
         <!-- Индикатор загрузки для следующей страницы -->
         <div v-if="loading && photos.length > 0" class="catalog-photos__loading-more">
@@ -280,6 +365,49 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 2rem;
   margin-bottom: 1.5rem;
+}
+
+.catalog-photos-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.pill-btn {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #ffffff;
+  color: var(--color-text);
+  border-radius: 999px;
+  padding: 0.55rem 0.95rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pill-btn:hover:not(:disabled) {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.08);
+  transform: translateY(-1px);
+}
+
+.pill-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pill-btn--ghost {
+  background: #ecfdf5;
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--color-accent);
+}
+
+.pill-btn--active {
+  background: var(--color-accent);
+  color: #ffffff;
+  border-color: var(--color-accent);
 }
 
 .catalog-photos-header__title {
@@ -345,6 +473,10 @@ onUnmounted(() => {
   .catalog-photos-header__top {
     flex-direction: column;
     gap: 1.5rem;
+  }
+
+  .catalog-photos-header__actions {
+    justify-content: flex-start;
   }
 }
 

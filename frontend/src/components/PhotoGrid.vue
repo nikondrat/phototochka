@@ -6,11 +6,17 @@ import PhotoCard from './PhotoCard.vue'
 interface Props {
   photos: Photo[]
   loading?: boolean
+  favoriteIds?: string[]
 }
 
 withDefaults(defineProps<Props>(), {
   loading: false,
+  favoriteIds: () => [],
 })
+
+const emit = defineEmits<{
+  'toggle-favorite': [id: string]
+}>()
 
 // Преобразуем Photo в формат для PhotoCard
 function toPhotoCardFormat(photo: Photo) {
@@ -50,7 +56,12 @@ function toPhotoCardFormat(photo: Photo) {
         class="photo-grid__link"
         :style="{ animationDelay: `${index * 0.05}s` }"
       >
-        <PhotoCard :photo="toPhotoCardFormat(photo)" />
+        <PhotoCard
+          :photo="toPhotoCardFormat(photo)"
+          :show-favorite="true"
+          :is-favorite="favoriteIds.includes(photo.id)"
+          @toggle-favorite="emit('toggle-favorite', photo.id)"
+        />
       </RouterLink>
     </div>
   </div>

@@ -19,6 +19,8 @@ interface Props {
   showActions?: boolean
   showStats?: boolean
   showStatus?: boolean
+  showFavorite?: boolean
+  isFavorite?: boolean
   variant?: 'default' | 'compact' | 'category' | 'collection'
 }
 
@@ -26,12 +28,15 @@ withDefaults(defineProps<Props>(), {
   showActions: false,
   showStats: false,
   showStatus: false,
+  showFavorite: false,
+  isFavorite: false,
   variant: 'default',
 })
 
 const emit = defineEmits<{
   edit: [id: string]
   delete: [id: string]
+  'toggle-favorite': [id: string]
 }>()
 
 function getStatusLabel(status: string) {
@@ -57,6 +62,15 @@ function getStatusClass(status: string) {
   <div :class="['photo-card', `photo-card--${variant}`]">
     <div class="photo-card__image">
       <img :src="photo.imageUrl" :alt="photo.title" />
+      <button
+        v-if="showFavorite"
+        class="photo-card__fav"
+        :aria-pressed="isFavorite"
+        :title="isFavorite ? 'Убрать из избранного' : 'В избранное'"
+        @click.stop.prevent="emit('toggle-favorite', photo.id)"
+      >
+        <span class="photo-card__fav-icon" :class="{ 'photo-card__fav-icon--on': isFavorite }">♥</span>
+      </button>
       <div v-if="showStatus && photo.status" class="photo-card__status-badge">
         <span :class="['photo-card__status', getStatusClass(photo.status)]">
           {{ getStatusLabel(photo.status) }}
@@ -147,6 +161,40 @@ function getStatusClass(status: string) {
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.photo-card__fav {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.photo-card__fav:hover {
+  transform: translateY(-1px);
+  border-color: rgba(16, 185, 129, 0.35);
+  background: #ffffff;
+}
+
+.photo-card__fav-icon {
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.photo-card__fav-icon--on {
+  color: var(--color-accent);
 }
 
 .photo-card:hover .photo-card__image img {

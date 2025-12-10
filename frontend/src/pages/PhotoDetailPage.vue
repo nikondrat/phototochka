@@ -16,6 +16,8 @@ const loading = ref(true)
 const selectedLicenseId = ref('')
 const imageZoomed = ref(false)
 
+const nextSimilarPhoto = computed(() => (similarPhotos.value.length > 0 ? similarPhotos.value[0] : null))
+
 // Загрузка данных фотографии
 async function loadPhotoData() {
   const photoId = route.params.id as string
@@ -251,6 +253,15 @@ onUnmounted(() => {
               >
                 Добавить в корзину
               </button>
+            </div>
+
+            <div class="photo-detail-licenses__nav" v-if="nextSimilarPhoto">
+              <router-link :to="`/photo/${nextSimilarPhoto.id}`" class="nav-link">
+                Следующее фото по теме → {{ nextSimilarPhoto.title }}
+              </router-link>
+              <router-link :to="`/catalog/photos?category=${photo.category}`" class="nav-link nav-link--muted">
+                Вернуться в категорию «{{ photo.category }}»
+              </router-link>
             </div>
           </div>
         </div>
@@ -612,6 +623,30 @@ onUnmounted(() => {
   display: grid;
   gap: 1rem;
   grid-template-columns: 1fr auto;
+}
+
+.photo-detail-licenses__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.nav-link {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.nav-link--muted {
+  color: var(--color-text-muted);
+  font-weight: 500;
 }
 
 .photo-detail-licenses__buy {

@@ -1,0 +1,47 @@
+РИСУНОК 3.5 - Древовидная структура компонентов Vue.js
+
+App.vue
+├── HeaderNav
+├── RouterView
+│   ├── HomePage
+│   │   ├── HeroBanner
+│   │   ├── SearchFilters
+│   │   ├── PhotoCarousel
+│   │   │   └── PhotoCard (множественные)
+│   │   ├── CategoryGrid
+│   │   ├── AuthorShowcase
+│   │   ├── BenefitsSection
+│   │   └── DualCTA
+│   ├── CatalogPhotosPage
+│   │   ├── CatalogSearch
+│   │   └── PhotoGrid
+│   │       └── PhotoCard (множественные)
+│   ├── PhotoDetailPage
+│   │   ├── LicenseSelector
+│   │   └── SimilarPhotos
+│   │       └── PhotoCard (множественные)
+│   ├── PhotographerDashboard
+│   │   ├── PhotographerLayout
+│   │   │   └── PhotographerSidebar
+│   │   ├── PhotoCard (множественные)
+│   │   └── AdminIcon
+│   ├── PhotographerPhotos
+│   │   ├── PhotographerLayout
+│   │   └── PhotoCard (множественные)
+│   ├── PhotographerUpload
+│   │   └── PhotographerLayout
+│   ├── PhotographerAnalytics
+│   │   └── PhotographerLayout
+│   ├── PhotographerSettings
+│   │   └── PhotographerLayout
+│   └── AdminPage
+│       ├── AdminStats
+│       │   └── AdminIcon
+│       ├── AdminPhotos
+│       │   └── AdminIcon
+│       ├── AdminAuthors
+│       │   └── AdminIcon
+│       ├── AdminCategories
+│       │   └── AdminIcon
+│       └── AdminIcon
+└── SiteFooter

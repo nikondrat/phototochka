@@ -1,0 +1,36 @@
+graph TB
+    subgraph Client["Клиентская часть (Frontend)"]
+        Browser["Браузер пользователя"]
+        VueApp["Vue.js SPA<br/>- Vue Router<br/>- Vue Components<br/>- State Management"]
+        Browser --> VueApp
+    end
+    
+    subgraph Server["Серверная часть (Backend)"]
+        Django["Django Framework<br/>- Django REST Framework<br/>- Business Logic<br/>- Authentication"]
+        API["REST API<br/>HTTPS/JSON"]
+    end
+    
+    subgraph Storage["Хранилище данных"]
+        DB[("База данных<br/>PostgreSQL<br/>- Пользователи<br/>- Фотографии<br/>- Заказы<br/>- Категории")]
+        MediaStorage[("Файловое хранилище<br/>Медиафайлы<br/>- Изображения<br/>- Превью")]
+    end
+    
+    VueApp -->|"HTTP/HTTPS<br/>REST API<br/>JSON"| API
+    API --> Django
+    Django -->|"SQL запросы"| DB
+    Django -->|"Чтение/запись<br/>файлов"| MediaStorage
+    
+    style Client fill:#e1f5ff,stroke:#0277bd,stroke-width:2px
+    style Server fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style Storage fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style Browser fill:#bbdefb,stroke:#1976d2,stroke-width:1px
+    style VueApp fill:#90caf9,stroke:#1565c0,stroke-width:1px
+    style Django fill:#a5d6a7,stroke:#388e3c,stroke-width:1px
+    style API fill:#c8e6c9,stroke:#4caf50,stroke-width:1px
+    style DB fill:#ffe0b2,stroke:#f57c00,stroke-width:1px
+    style MediaStorage fill:#ffe0b2,stroke:#f57c00,stroke-width:1px
+
+
+
+
+
