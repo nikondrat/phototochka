@@ -111,3 +111,21 @@
 - Действия: start=2025-12-10T16:20+03:00, finish=2025-12-10T16:55+03:00, duration=35m; скорректировал градиент доверительного блока в `BenefitsSection.vue`, вернул тёмную палитру подписки с фирменными акцентами в `HomePage.vue`; переснял скриншоты через `scripts/capture_screenshots.js` (preview на 127.0.0.1:4173); обновил `docs/reports/behavioral_factors.md` под текущий UI (метрики доверия, тёмная подписка, избранное/сохранённые фильтры, «следующее фото»).
 - Передаю: QA/UX — проверить визуал доверия/подписки и скриншоты (`docs/reports/screenshots/`); Multi-Agent Controller — подтвердить обновлённый отчёт; Product Manager — утвердить тексты метрик.
 - Примечания: outcome=success, blockers=нет.
+
+## 2025-12-10 — Operations Runner (Fullstack/SEO)
+- Задача: SEO-LAB-006 — Внутренняя SEO-оптимизация ФотоТочки
+- Действия: start=2025-12-10T17:10+03:00, finish=2025-12-10T18:05+03:00, duration=55m; добавлен `frontend/public/robots.txt` с запретом индексации служебных разделов и указанием Host/Sitemap; обновлён `frontend/index.html` (lang=ru, осмысленный `<title>`, description/keywords/robots, базовые OG и каноникал); внедрён SEO-движок `frontend/src/seo/seoConfig.ts` с картой метаданных по маршрутам и автоматическим `router.afterEach`; обновлён `frontend/src/router/index.ts`; оформлен отчёт `docs/reports/lab6_internal_seo.md`; выполнена сборка `npm run build` — успех.
+- Передаю: Multi-Agent Controller — утвердить ЛР‑6; Project Manager — при выкладке проставить фактический домен в `VITE_SITE_URL` и `robots.txt`, сгенерировать `sitemap.xml`; QA/UX — проверить сниппеты и OG-карточки.
+- Примечания: outcome=success, blockers=нет.
+
+## 2025-12-10 — Operations Runner (Documentation)
+- Задача: SEO-LAB-006-REV — Переформатирование отчёта ЛР‑6 в учебном стиле
+- Действия: start=2025-12-10T18:55+03:00, finish=2025-12-10T19:05+03:00, duration=10m; переписан `docs/reports/lab6_internal_seo.md` под формат лабораторной работы (цель, исходные данные, ход, результаты, рекомендации) без отсылок к первому лицу; содержание приведено в соответствие контексту проекта «ФотоТочка».
+- Передаю: Multi-Agent Controller — утвердить финальный текст отчёта; QA/UX — проверить формулировки и полноту шагов.
+- Примечания: outcome=success, blockers=нет.
+
+## 2025-01-XX — Operations Runner (SEO Analyst)
+- Задача: SEO-LAB-007 — Анализ ссылочной массы и разработка ссылочной стратегии
+- Действия: start=2025-01-XXTXX:XX+03:00, finish=2025-01-XXTXX:XX+03:00, duration=XXm; проведён анализ ссылочной массы конкурента Unsplash.com (2,5 млн ссылок, DR 91, ИКС 6,200) с использованием Ahrefs Site Explorer; разработана трёхэтапная ссылочная стратегия для «ФотоТочка» (фундамент → рост → масштабирование); подобраны 3 сайта-донора (Behance.net DR 88, Photographer.ru DR 45, Designmodo.com DR 72) с анализом качества и планом размещения; оформлен отчёт `docs/reports/lab7_link_mass_analysis.md` с детальными данными, таблицами и рекомендациями.
+- Передаю: Multi-Agent Controller — утвердить отчёт ЛР‑7; Product Manager — принять решение по приоритизации доноров и срокам размещения ссылок; SEO Specialist — начать реализацию стратегии с Behance и Photographer.ru.
+- Примечания: outcome=success, blockers=нет.

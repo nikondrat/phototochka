@@ -1,0 +1,17 @@
+User-agent: *
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /photographer
+Disallow: /photographer/photos
+Disallow: /photographer/photos/upload
+Disallow: /photographer/analytics
+Disallow: /photographer/settings
+Allow: /
+
+# Укажите актуальный домен и карту сайта при выкладке
+Host: phototochka.local
+Sitemap: https://phototochka.local/sitemap.xml
+
+
+

@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { auth } from '../utils/auth'
+import { applySeo } from '../seo/seoConfig'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -100,6 +101,10 @@ router.beforeEach((to, _from, next) => {
   } else {
     next()
   }
+})
+
+router.afterEach((to) => {
+  applySeo(to)
 })
 
 export default router
