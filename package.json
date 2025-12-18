@@ -1,8 +1,7 @@
 {
-  "name": "graduation-root",
-  "private": true,
-  "scripts": {
-    "build": "cd frontend && npm install && npm run build"
-  }
+    "name": "graduation-root",
+    "private": true,
+    "scripts": {
+        "build": "cd frontend && npm install && npm run build"
+    }
 }
-

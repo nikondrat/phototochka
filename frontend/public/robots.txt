@@ -9,5 +9,5 @@ Disallow: /photographer/analytics
 Disallow: /photographer/settings
 Allow: /
 
-Sitemap: https://fototochka.ru/sitemap.xml
+Sitemap: https://nikondrat-graduation-9add.twc1.net/sitemap.xml
 
