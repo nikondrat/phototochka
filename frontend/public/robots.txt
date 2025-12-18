@@ -9,9 +9,5 @@ Disallow: /photographer/analytics
 Disallow: /photographer/settings
 Allow: /
 
-# Укажите актуальный домен и карту сайта при выкладке
-Host: phototochka.local
-Sitemap: https://phototochka.local/sitemap.xml
-
-
+Sitemap: https://fototochka.ru/sitemap.xml
 
