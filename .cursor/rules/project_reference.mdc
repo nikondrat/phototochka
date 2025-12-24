@@ -1,0 +1,92 @@
+---
+alwaysApply: true
+description: Universal project component reference - key classes, patterns, and reusable utilities.
+---
+# Role: Project Reference
+
+## When to use
+
+**ALWAYS reference this before creating new components.**  
+Use existing classes, utilities, and patterns instead of building from scratch.
+
+## Core rule
+
+Check this reference FIRST. Reuse > reinvent. Follow established architecture.
+
+## Domain Models
+
+- `Candle` - OHLCV data (use for all price/time data)
+- `Signal` - Trading signals (LONG/SHORT/CLOSE with confidence Decimal 0-1)
+- `Position` - Open positions
+- `Trade` - Completed trades
+- `Order` - Order lifecycle
+
+## Key Interfaces & Services
+
+BrokerAdapter         → Use interface, not concrete impls
+RiskManager           → ALWAYS for position sizing (never manual calc)
+PortfolioManager      → Portfolio tracking/valuation
+OrderExecutor         → Order placement/execution
+CandleRepository      → Async DB access (interface only)
+FeatureRepository     → Feature storage/retrieval
+SignalRepository      → Signal persistence
+PositionRepository    → Position persistence
+TradeRepository       → Trade persistence
+DataSource            → Data source abstraction
+RustCandleLoader      → High-performance data loading (backtesting/validation)
+BacktestEngine        → Event-driven backtesting w/ costs
+
+## Strategies
+
+- `Strategy` (base class) - Inherit for all trading strategies
+- `StrategyConfig` - Configuration (params, filters, hypothesis)
+- `generate_signals()` - Abstract method
+- Multi-timeframe: `dict[str, list[Candle]]` input
+
+## Utilities (MANDATORY)
+
+jitro.utils.intervals.normalize_interval()  → 1m,5m,15m,1h,1d
+utils.dates.is_market_open()                → Trading hours
+utils.tickers.ALL_AVAILABLE_TICKERS         → NEVER hardcode tickers
+utils.tinkoff.quotation_to_decimal()        → Quotation → Decimal
+
+## Architecture (DDD)
+
+core/domain/     → Pure models (no infra deps)
+core/ports/      → Interfaces/abstractions  
+core/services/   → Business logic
+infrastructure/  → DB, brokers, ML impls
+
+## Backtesting
+
+- `BacktestEngine` + `BacktestConfig`
+- Include: commissions, spreads, slippage, taxes
+- Metrics: `calculate_backtest_metrics()`
+
+## ML Pipeline
+
+- `ONNXInference` → Production inference
+- `ModelRegistry` → Model storage/retrieval  
+- `FeatureStore` → Feature storage/retrieval
+
+## Configuration
+
+- `AppSettings` via env vars (`JITRO_*` prefix)
+- Pydantic validation for ALL settings
+
+## CRITICAL RULES
+
+1. **Interfaces over implementations** (`ports/` → `infrastructure/`)
+2. **Decimal for ALL money** (never float)
+3. **RiskManager for position sizing** (always)
+4. **Async for DB/broker calls**
+5. **normalize_interval() everywhere**
+6. **Repository pattern for DB** (no raw SQL)
+7. **Strategy base class** for all strategies
+
+## Workflow
+
+1. Check: does component exist? → YES: use it
+2. If NO: extend existing base/interface  
+3. Test against real historical data
+4. Document in docs/adr/ if new pattern created

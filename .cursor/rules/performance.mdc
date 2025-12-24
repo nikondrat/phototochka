@@ -1,0 +1,47 @@
+---
+alwaysApply: false
+description: High‑level performance guidelines for DB, Rust, Python and async workloads. Full details live in docs.
+---
+# Performance Optimization (High‑Level)
+
+## When to use
+
+Apply these rules when:
+
+- working with PostgreSQL schemas, queries or bulk data loads;
+- implementing high‑load Rust/Python code;
+- running large backtests or processing big historical datasets;
+- optimizing latency/throughput on critical paths.
+
+## Core principles
+
+- **Measure first**: profile before optimizing, compare before/after.
+- **Focus on hot paths**: optimize only what is called often or processes lots of data.
+- **Data locality & batching**: prefer sequential access, batched operations.
+- **Reuse patterns**: follow existing project performance patterns from docs.
+- **Document changes**: record non‑obvious optimizations and their impact.
+
+## PostgreSQL (essentials)
+
+- Use **time‑based partitioning** for large time‑series tables with pruning‑friendly queries.
+- Prefer **COPY** (optionally binary) for bulk loads instead of many INSERTs.
+- Use appropriate **indexes**: BRIN for large ordered time columns, covering/partial indexes for hot queries.
+- Tune DB with project defaults (buffers, work_mem, parallelism) from `docs/performance/performance_guide.md`.
+- For slow queries (>1s), ALWAYS inspect `EXPLAIN ANALYZE` before guessing.
+
+## Rust / Python / async
+
+- For CPU‑bound code: move heavy loops to Rust and profile with proper tools.
+- For I/O‑bound code: use async, batching, and streaming instead of per‑row operations.
+- Avoid blocking calls in async code; offload heavy work to workers where needed.
+
+## Backtests & bulk processing
+
+- Process data in **chunks/batches**, not “all at once” when volume is large.
+- Always account for real‑world costs (commissions, spreads, slippage, taxes).
+- Use existing loaders and backtesting engines instead of reimplementing them.
+
+## Full details
+
+For concrete settings, advanced patterns (partitioning schemes, COPY binary format, PGO/LTO, WAL tuning, OS/kernel tweaks, etc.)  
+**see**: `docs/performance/performance_guide.md`.
