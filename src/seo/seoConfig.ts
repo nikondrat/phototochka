@@ -204,5 +204,10 @@ export const applySeo = (to: RouteLocationNormalized) => {
   upsertPropertyMeta('twitter:image', seo.ogImage ?? DEFAULT_SEO.ogImage)
 
   ensureCanonical(canonical)
+
+  // Отправка события в Яндекс.Метрику при смене роута
+  if (typeof (window as any).ym === 'function') {
+    (window as any).ym(106463869, 'hit', canonical)
+  }
 }
 
