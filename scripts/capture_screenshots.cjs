@@ -63,9 +63,15 @@ async function main() {
   // 1) О чём сайт — первый экран
   await capture(`${base}/`, "p1_home_hero.jpg");
 
-  // 2) Витрина — новинки
+  // 2) Витрина — блок «Последние добавления» (#catalog), без произвольного scroll по пикселям
   await capture(`${base}/`, "p2_home_showcase.jpg", async () => {
-    await page.evaluate(() => window.scrollTo({ top: 520, behavior: "auto" }));
+    const catalog = await page.$("#catalog");
+    if (catalog) {
+      await catalog.scrollIntoViewIfNeeded();
+    } else {
+      await page.evaluate(() => window.scrollTo({ top: 480, behavior: "auto" }));
+    }
+    await page.waitForTimeout(400);
   });
 
   // 6/9) Тематические материалы / техническое — доверие + подписка
