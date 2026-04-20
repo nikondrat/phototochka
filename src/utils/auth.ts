@@ -7,15 +7,32 @@ export interface User {
 
 const STORAGE_KEY = 'fototochka_auth'
 
+const demoEmail = () => import.meta.env.VITE_DEMO_ADMIN_EMAIL?.trim() ?? ''
+const demoPassword = () => import.meta.env.VITE_DEMO_ADMIN_PASSWORD?.trim() ?? ''
+const demoDisplayName = () =>
+  import.meta.env.VITE_DEMO_ADMIN_DISPLAY_NAME?.trim() || 'Администратор'
+
 export const auth = {
   login(email: string, password: string): Promise<User> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (email === 'admin@admin.com' && password === 'admin123') {
+        const expectedEmail = demoEmail()
+        const expectedPassword = demoPassword()
+
+        if (!expectedEmail || !expectedPassword) {
+          reject(
+            new Error(
+              'Демо-вход не настроен: задайте VITE_DEMO_ADMIN_EMAIL и VITE_DEMO_ADMIN_PASSWORD в .env (см. .env.example)',
+            ),
+          )
+          return
+        }
+
+        if (email === expectedEmail && password === expectedPassword) {
           const user: User = {
             id: '1',
-            email: 'admin@admin.com',
-            name: 'Администратор',
+            email: expectedEmail,
+            name: demoDisplayName(),
             role: 'admin',
           }
           localStorage.setItem(STORAGE_KEY, JSON.stringify(user))

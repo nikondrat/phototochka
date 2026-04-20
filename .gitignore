@@ -12,6 +12,25 @@ dist
 dist-ssr
 *.local
 
+# Env (пример окружения — в репозитории)
+.env
+.env.*
+!.env.example
+
+# Кэш и отчёты
+.vite
+coverage
+*.tsbuildinfo
+test-results
+playwright-report
+scripts/capture.log
+
+# Локальная документация и рабочие материалы (не в git)
+docs/
+
+# Cursor
+.cursor/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

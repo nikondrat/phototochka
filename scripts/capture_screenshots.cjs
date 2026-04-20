@@ -10,7 +10,7 @@ function log(msg) {
 
 async function main() {
   const base = "http://127.0.0.1:4173";
-  const outDir = path.join(__dirname, "..", "docs", "reports", "screenshots");
+  const outDir = path.join(__dirname, "..", "readme-assets", "screenshots");
   const viewport = { width: 1280, height: 800 };
 
   if (!fs.existsSync(outDir)) {
@@ -61,39 +61,39 @@ async function main() {
   };
 
   // 1) О чём сайт — первый экран
-  await capture(`${base}/`, "p1_home_hero.png");
+  await capture(`${base}/`, "p1_home_hero.jpg");
 
   // 2) Витрина — новинки
-  await capture(`${base}/`, "p2_home_showcase.png", async () => {
+  await capture(`${base}/`, "p2_home_showcase.jpg", async () => {
     await page.evaluate(() => window.scrollTo({ top: 520, behavior: "auto" }));
   });
 
   // 6/9) Тематические материалы / техническое — доверие + подписка
-  await capture(`${base}/`, "p6_home_trust_subscribe.png", async () => {
+  await capture(`${base}/`, "p6_home_trust_subscribe.jpg", async () => {
     const el = await page.$(".trust-block");
     if (el) await el.scrollIntoViewIfNeeded();
   });
 
   // 3) Решение задачи — поиск/фильтры каталога
-  await capture(`${base}/catalog/photos`, "p3_catalog_filters.png");
+  await capture(`${base}/catalog/photos`, "p3_catalog_filters.jpg");
 
   // 5) Интерактив — скролл ленты
-  await capture(`${base}/catalog/photos`, "p5_catalog_scrolled.png", async () => {
+  await capture(`${base}/catalog/photos`, "p5_catalog_scrolled.jpg", async () => {
     await page.evaluate(() => window.scrollTo({ top: 900, behavior: "auto" }));
     await page.waitForTimeout(400);
   });
 
   // 8) Возвраты — избранное и сохранённые фильтры
-  await capture(`${base}/catalog/photos`, "p8_catalog_favorites.png", async () => {
+  await capture(`${base}/catalog/photos`, "p8_catalog_favorites.jpg", async () => {
     const btn = await page.$(".photo-card__favorite-btn");
     if (btn) await btn.click({ force: true });
   });
 
   // 4) Навигация — хлебные крошки/назад в категорию
-  await capture(`${base}/photo/photo-1`, "p4_photo_breadcrumbs.png");
+  await capture(`${base}/photo/photo-1`, "p4_photo_breadcrumbs.jpg");
 
   // 7) Перелинковка — теги/похожие/следующее фото
-  await capture(`${base}/photo/photo-1`, "p7_photo_similar.png", async () => {
+  await capture(`${base}/photo/photo-1`, "p7_photo_similar.jpg", async () => {
     await page.evaluate(() => {
       const nav = document.querySelector(".photo-detail-navigation");
       if (nav) nav.scrollIntoView({ behavior: "auto", block: "start" });
@@ -102,7 +102,7 @@ async function main() {
   });
 
   // 9) Техническое состояние — повторный контроль загрузки
-  await capture(`${base}/`, "p9_home_tech.png");
+  await capture(`${base}/`, "p9_home_tech.jpg");
 
   await browser.close();
   log("done");
@@ -112,4 +112,3 @@ main().catch((err) => {
   log(`error ${err?.stack || err}`);
   process.exit(1);
 });
-

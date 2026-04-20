@@ -1,5 +1,6 @@
 import type { RouteLocationNormalized } from 'vue-router'
 import defaultOgImage from '../assets/images/strategy-workshop.jpg'
+import { getYandexMetrikaId, yandexMetrikaHit } from '../utils/analytics'
 
 type SeoMeta = {
   title: string
@@ -12,7 +13,7 @@ type SeoMeta = {
 
 const SITE_URL =
   (import.meta.env.VITE_SITE_URL as string | undefined)?.replace(/\/+$/, '') ||
-  'https://phototochka.local'
+  'http://127.0.0.1:5173'
 
 const DEFAULT_SEO: SeoMeta = {
   title: 'ФотоТочка — маркетплейс стоковых фотографий и лицензий',
@@ -205,9 +206,11 @@ export const applySeo = (to: RouteLocationNormalized) => {
 
   ensureCanonical(canonical)
 
-  // Отправка события в Яндекс.Метрику при смене роута
-  if (typeof (window as any).ym === 'function') {
-    (window as any).ym(106463869, 'hit', canonical)
+  const yandexVerify = import.meta.env.VITE_YANDEX_SITE_VERIFICATION?.trim()
+  upsertMeta('yandex-verification', yandexVerify || undefined)
+
+  if (getYandexMetrikaId() !== null) {
+    yandexMetrikaHit(canonical)
   }
 }
 

@@ -1,12 +1,13 @@
 {
-    "name": "frontend",
+    "name": "phototochka",
     "private": true,
     "version": "0.0.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
         "build": "vue-tsc -b && vite build && cp dist/index.html dist/404.html",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "capture:readme": "node scripts/capture_screenshots.cjs"
     },
     "dependencies": {
         "vue": "^3.5.24",
