@@ -25,6 +25,7 @@ usage() {
   echo "  test:back    Запуск тестов бэкенда (pytest)"
   echo "  test:full    Полный цикл тестов (back + front lint + E2E)"
   echo "  seed         Наполнение базы демо-данными"
+  echo "  deploy       Деплой на VDS (через rsync + ssh)"
   echo "  help         Показать это сообщение"
 }
 
@@ -96,6 +97,10 @@ case "${1:-}" in
 
   seed)
     cd backend && source .venv/bin/activate && python manage.py seed_demo
+    ;;
+
+  deploy)
+    bash scripts/internal/deploy.sh
     ;;
 
   help|--help|-h|"")
