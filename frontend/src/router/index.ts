@@ -55,6 +55,12 @@ const router = createRouter({
       component: () => import('../pages/RegisterPage.vue'),
     },
     {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../pages/ProfilePage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/photographer',
       name: 'photographer-dashboard',
       component: () => import('../pages/PhotographerDashboard.vue'),

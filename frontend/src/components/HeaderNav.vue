@@ -108,7 +108,7 @@ onUnmounted(() => {
           <RouterLink v-if="isAdmin" class="btn btn--ghost" to="/admin"
             >Админка</RouterLink
           >
-          <span class="header__user">{{ currentUser.name }}</span>
+          <RouterLink class="header__user" to="/profile">{{ currentUser.displayName || currentUser.username || currentUser.name }}</RouterLink>
           <button class="btn btn--ghost" @click="handleLogout">Выйти</button>
         </template>
         <template v-else>
@@ -214,7 +214,9 @@ onUnmounted(() => {
                 >
                   Админка
                 </RouterLink>
-                <span class="header__mobile-user">{{ currentUser.name }}</span>
+                <RouterLink class="header__mobile-user" to="/profile" @click="closeMenu">
+                  {{ currentUser.displayName || currentUser.username || currentUser.name }}
+                </RouterLink>
                 <button class="btn btn--ghost" @click="handleLogout">
                   Выйти
                 </button>

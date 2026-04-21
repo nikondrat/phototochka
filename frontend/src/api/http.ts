@@ -1,6 +1,17 @@
 const getBaseUrl = () => {
-  // В разработке используем относительные пути, которые проксируются Vite
   return '/api'
+}
+
+let isRefreshing = false
+let refreshSubscribers: ((token: string) => void)[] = []
+
+const subscribeTokenRefresh = (cb: (token: string) => void) => {
+  refreshSubscribers.push(cb)
+}
+
+const onRefreshed = (token: string) => {
+  refreshSubscribers.map((cb) => cb(token))
+  refreshSubscribers = []
 }
 
 export async function apiFetch<T = any>(
@@ -21,7 +32,6 @@ export async function apiFetch<T = any>(
     headers.set('Content-Type', 'application/json')
   }
 
-  // Токен будем добавлять на этапе В (Auth)
   const token = localStorage.getItem('access_token')
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
@@ -32,6 +42,46 @@ export async function apiFetch<T = any>(
     headers,
   })
 
+  // Handle Token Refresh
+  if (response.status === 401 && localStorage.getItem('refresh_token') && !endpoint.includes('/auth/token/')) {
+    if (!isRefreshing) {
+      isRefreshing = true
+      const refreshToken = localStorage.getItem('refresh_token')
+      
+      try {
+        const refreshRes = await fetch(`${getBaseUrl()}/auth/token/refresh/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh: refreshToken }),
+        })
+
+        if (refreshRes.ok) {
+          const { access } = await refreshRes.json()
+          localStorage.setItem('access_token', access)
+          isRefreshing = false
+          onRefreshed(access)
+        } else {
+          // Refresh failed
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('fototochka_user')
+          window.location.href = '/login'
+          throw new Error('Session expired')
+        }
+      } catch (err) {
+        isRefreshing = false
+        throw err
+      }
+    }
+
+    return new Promise((resolve) => {
+      subscribeTokenRefresh((token) => {
+        headers.set('Authorization', `Bearer ${token}`)
+        resolve(fetch(url, { ...options, headers }).then(res => res.json()))
+      })
+    })
+  }
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
     throw {
@@ -41,7 +91,6 @@ export async function apiFetch<T = any>(
     }
   }
 
-  // Если это DELETE или пустой ответ
   if (response.status === 204) return {} as T
 
   return response.json()

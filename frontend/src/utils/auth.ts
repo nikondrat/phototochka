@@ -1,55 +1,51 @@
+import { apiFetch } from '../api/http'
+
 export interface User {
-  id: string
+  id: string | number
   email: string
-  name: string
-  role: 'admin' | 'user' | 'author'
+  displayName: string
+  role: 'admin' | 'buyer' | 'author'
+  avatar?: string
 }
 
-const STORAGE_KEY = 'fototochka_auth'
-
-const demoEmail = () => import.meta.env.VITE_DEMO_ADMIN_EMAIL?.trim() ?? ''
-const demoPassword = () => import.meta.env.VITE_DEMO_ADMIN_PASSWORD?.trim() ?? ''
-const demoDisplayName = () =>
-  import.meta.env.VITE_DEMO_ADMIN_DISPLAY_NAME?.trim() || 'Администратор'
+const USER_STORAGE_KEY = 'fototochka_user'
+const ACCESS_TOKEN_KEY = 'access_token'
+const REFRESH_TOKEN_KEY = 'refresh_token'
 
 export const auth = {
-  login(email: string, password: string): Promise<User> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const expectedEmail = demoEmail()
-        const expectedPassword = demoPassword()
+  async login(username: string, password: string): Promise<User> {
+    const data = await apiFetch<{ access: string; refresh: string }>('/auth/token/', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    })
 
-        if (!expectedEmail || !expectedPassword) {
-          reject(
-            new Error(
-              'Демо-вход не настроен: задайте VITE_DEMO_ADMIN_EMAIL и VITE_DEMO_ADMIN_PASSWORD в .env (см. .env.example)',
-            ),
-          )
-          return
-        }
+    localStorage.setItem(ACCESS_TOKEN_KEY, data.access)
+    localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh)
 
-        if (email === expectedEmail && password === expectedPassword) {
-          const user: User = {
-            id: '1',
-            email: expectedEmail,
-            name: demoDisplayName(),
-            role: 'admin',
-          }
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-          resolve(user)
-        } else {
-          reject(new Error('Неверный email или пароль'))
-        }
-      }, 500)
+    return await this.fetchMe()
+  },
+
+  async register(userData: any): Promise<void> {
+    await apiFetch('/auth/register/', {
+      method: 'POST',
+      body: JSON.stringify(userData),
     })
   },
 
+  async fetchMe(): Promise<User> {
+    const user = await apiFetch<User>('/auth/me/')
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
+    return user
+  },
+
   logout(): void {
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(USER_STORAGE_KEY)
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
   },
 
   getCurrentUser(): User | null {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = localStorage.getItem(USER_STORAGE_KEY)
     if (!stored) return null
     try {
       return JSON.parse(stored) as User
@@ -59,7 +55,7 @@ export const auth = {
   },
 
   isAuthenticated(): boolean {
-    return this.getCurrentUser() !== null
+    return localStorage.getItem(ACCESS_TOKEN_KEY) !== null
   },
 
   isAdmin(): boolean {
@@ -67,4 +63,3 @@ export const auth = {
     return user?.role === 'admin'
   },
 }
-
