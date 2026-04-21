@@ -41,3 +41,8 @@ class PhotoListSerializer(serializers.ModelSerializer):
 class PhotoDetailSerializer(PhotoListSerializer):
     class Meta(PhotoListSerializer.Meta):
         fields = PhotoListSerializer.Meta.fields + ("width", "height")
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ("id", "name", "slug")

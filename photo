@@ -73,10 +73,9 @@ case "${1:-}" in
 
   build)
     info "Сборка фронтенда..."
-    cd frontend && npm install && npm run build
-    cd "$ROOT"
+    (cd frontend && npm install && npm run build)
     info "Сборка бэкенда (collectstatic)..."
-    cd backend && source .venv/bin/activate && python manage.py collectstatic --noinput
+    (cd backend && source .venv/bin/activate && python manage.py collectstatic --noinput)
     info "Сборка завершена!"
     ;;
 

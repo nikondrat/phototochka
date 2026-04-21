@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { popularPhotos, newPhotos, authors } from "../../data/homepage";
+import { ref, onMounted, computed } from "vue";
+import { adminService, type AdminStats } from "../../services/adminService";
 import AdminIcon from "./AdminIcon.vue";
 
-const totalPhotos = computed(() => popularPhotos.length + newPhotos.length);
-const totalAuthors = computed(() => authors.length);
-const totalViews = ref(12450);
-const totalSales = ref(342);
-const revenue = ref(128400);
+const loading = ref(true);
+const statsData = ref<AdminStats | null>(null);
 
-const stats = [
+onMounted(async () => {
+  try {
+    statsData.value = await adminService.getStats();
+  } catch (error) {
+    console.error("Failed to fetch admin stats", error);
+  } finally {
+    loading.value = false;
+  }
+});
+
+const stats = computed(() => [
   {
     label: "Всего фотографий",
-    value: totalPhotos,
+    value: statsData.value?.totalPhotos || 0,
     icon: "photos",
     color: "#10B981",
     bgGradient:
@@ -21,7 +28,7 @@ const stats = [
   },
   {
     label: "Авторов",
-    value: totalAuthors,
+    value: statsData.value?.totalAuthors || 0,
     icon: "authors",
     color: "#3B82F6",
     bgGradient:
@@ -30,7 +37,7 @@ const stats = [
   },
   {
     label: "Просмотров",
-    value: totalViews,
+    value: statsData.value?.totalViews || 0,
     icon: "view",
     color: "#8B5CF6",
     bgGradient:
@@ -39,35 +46,16 @@ const stats = [
   },
   {
     label: "Продаж",
-    value: totalSales,
+    value: statsData.value?.totalSales || 0,
     icon: "money",
     color: "#F59E0B",
     bgGradient:
       "linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))",
     trend: "+8%",
   },
-];
+]);
 
-const recentActivity = [
-  {
-    type: "photo",
-    action: "Добавлена новая фотография",
-    author: "Марина Колосова",
-    time: "2 мин назад",
-  },
-  {
-    type: "author",
-    action: "Зарегистрирован новый автор",
-    author: "Алексей Дёмин",
-    time: "15 мин назад",
-  },
-  {
-    type: "sale",
-    action: "Оформлена продажа",
-    author: "Студия PlanLab",
-    time: "1 час назад",
-  },
-];
+const recentActivity = computed(() => statsData.value?.recentActivity || []);
 </script>
 
 <template>
@@ -111,15 +99,15 @@ const recentActivity = [
           <div class="stat-item">
             <span class="stat-item__label">Выручка</span>
             <span class="stat-item__value"
-              >{{ (revenue || 0).toLocaleString("ru-RU") }} ₽</span
+              >{{ (statsData?.revenue || 0).toLocaleString("ru-RU") }} ₽</span
             >
           </div>
           <div class="stat-item">
             <span class="stat-item__label">Средний чек</span>
             <span class="stat-item__value"
               >{{
-                (totalSales > 0
-                  ? Math.round((revenue || 0) / totalSales)
+                (statsData?.totalSales && statsData.totalSales > 0
+                  ? Math.round((statsData.revenue || 0) / statsData.totalSales)
                   : 0
                 ).toLocaleString("ru-RU")
               }}
@@ -130,8 +118,8 @@ const recentActivity = [
             <span class="stat-item__label">Конверсия</span>
             <span class="stat-item__value"
               >{{
-                totalViews > 0
-                  ? ((totalSales / totalViews) * 100).toFixed(2)
+                statsData?.totalViews && statsData.totalViews > 0
+                  ? ((statsData.totalSales / statsData.totalViews) * 100).toFixed(2)
                   : "0.00"
               }}%</span
             >
