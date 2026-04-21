@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: phototochka
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d phototochka"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - phototochka_media:/app/media
+    environment:
+      - DJANGO_DEBUG=1
+      - DJANGO_SECRET_KEY=dev-secret-key-123
+      - DJANGO_ALLOWED_HOSTS=*
+      - DATABASE_URL=postgres://user:password@db:5432/phototochka
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  postgres_data:
+  phototochka_media:
