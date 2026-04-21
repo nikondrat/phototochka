@@ -174,7 +174,8 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
 }
 
-# AUTH_USER_MODEL will be set in Stage B
+# AUTH_USER_MODEL
+AUTH_USER_MODEL = "accounts.User"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
