@@ -8,17 +8,23 @@
 
 ## Интерфейс
 
+
 | Главная | Каталог | Карточка фото |
-| :---: | :---: | :---: |
-| ![Главная](readme-assets/screenshots/p1_home_hero.jpg) | ![Каталог](readme-assets/screenshots/p3_catalog_filters.jpg) | ![Карточка](readme-assets/screenshots/p4_photo_breadcrumbs.jpg) |
+| ------- | ------- | ------------- |
+| Главная | Каталог | Карточка      |
+
+
 
 | Новинки на главной | Лента каталога | Блок доверия |
-| :---: | :---: | :---: |
-| ![Новинки](readme-assets/screenshots/p2_home_showcase.jpg) | ![Лента](readme-assets/screenshots/p5_catalog_scrolled.jpg) | ![Доверие](readme-assets/screenshots/p6_home_trust_subscribe.jpg) |
+| ------------------ | -------------- | ------------ |
+| Новинки            | Лента          | Доверие      |
+
+
 
 | Похожие фото |
-| :---: |
-| ![Похожие](readme-assets/screenshots/p7_photo_similar.jpg) |
+| ------------ |
+| Похожие      |
+
 
 > Скриншоты можно переснять: `npm run build`, затем в одном терминале `npm run preview -- --host 127.0.0.1 --port 4173`, в другом — `npm run capture:readme` (нужен `npx playwright install chromium` один раз).
 

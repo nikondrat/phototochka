@@ -10,7 +10,7 @@ function log(msg) {
 
 async function main() {
   const base = "http://127.0.0.1:4173";
-  const outDir = path.join(__dirname, "..", "readme-assets", "screenshots");
+  const outDir = path.join(__dirname, "..", "..", "readme-assets", "screenshots");
   const viewport = { width: 1280, height: 800 };
 
   if (!fs.existsSync(outDir)) {
