@@ -49,10 +49,8 @@ scripts/capture.log
 # Локальная документация и рабочие материалы (не в git)
 docs/
 
-# Cursor
+# IDE
 .cursor/
-
-# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
