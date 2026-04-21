@@ -86,11 +86,13 @@ case "${1:-}" in
 
   test:full)
     info "Запуск тестов бэкенда..."
-    cd backend && source .venv/bin/activate && pytest || error "Тесты бэкенда провалены"
-    cd "$ROOT"
-    info "Линтинг фронтенда..."
-    cd frontend && npm run lint || warn "Линтинг фронтенда нашел ошибки"
-    info "E2E тесты будут добавлены на этапе В."
+    (cd backend && source .venv/bin/activate && pytest) || error "Тесты бэкенда провалены"
+    
+    info "Проверка типов фронтенда..."
+    (cd frontend && npm run lint) || warn "Проверка типов фронтенда нашла ошибки"
+    
+    info "Запуск E2E тестов (Playwright)..."
+    (cd frontend && npx playwright test) || error "E2E тесты провалены"
     ;;
 
   seed)
