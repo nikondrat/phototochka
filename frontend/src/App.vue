@@ -28,7 +28,7 @@ const showHeaderAndFooter = computed(() => {
 <template>
   <div class="app">
     <HeaderNav v-if="showHeaderAndFooter" />
-    <RouterView />
+    <RouterView :key="route.path" />
     <SiteFooter v-if="showHeaderAndFooter" />
   </div>
 </template>

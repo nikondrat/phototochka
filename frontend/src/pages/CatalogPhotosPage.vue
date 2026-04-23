@@ -4,9 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import CatalogSearch from '../components/CatalogSearch.vue'
 import type { Photo } from '../data/photos'
-import { getPhotos, paramsFromQuery } from '../services/photoService'
+import { getPhotos, paramsFromQuery, getOrientations } from '../services/photoService'
 import { fetchCategoryList } from '../services/showcaseService'
-import type { CategoryItem } from '../types/showcase'
+import type { CategoryItem, OrientationItem } from '../types/showcase'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,12 +21,13 @@ const currentPage = ref(1)
 const totalPhotos = ref(0)
 const searchQuery = ref('')
 const selectedCategory = ref<string | null>(null)
-const selectedOrientation = ref<'landscape' | 'portrait' | 'square' | null>(null)
+const selectedOrientation = ref<string | null>(null)
 const favoriteIds = ref<string[]>([])
 const showOnlyFavorites = ref(false)
 const savedFilters = ref<{ category?: string | null; search?: string; orientation?: string | null } | null>(null)
 
 const categories = ref<CategoryItem[]>([])
+const orientations = ref<OrientationItem[]>([])
 
 const categoryHeaderTitle = computed(() => {
   const slug = selectedCategory.value
@@ -65,7 +66,7 @@ async function loadPhotos(page: number = 1, append: boolean = false) {
   loading.value = true
 
   try {
-    const params = {
+    const params: any = {
       category: selectedCategory.value || undefined,
       search: searchQuery.value || undefined,
       orientation: selectedOrientation.value || undefined,
@@ -120,17 +121,6 @@ function applyFilters() {
   router.push({ 
     path: '/catalog/photos', 
     query 
-  }).then(() => {
-    photos.value = []
-    currentPage.value = 1
-    hasMore.value = true
-    loadPhotos(1)
-  }).catch(() => {
-    // Обработка ошибки навигации
-    photos.value = []
-    currentPage.value = 1
-    hasMore.value = true
-    loadPhotos(1)
   })
 }
 
@@ -213,8 +203,8 @@ function handleSearch(query: string) {
 }
 
 // Обработка выбора ориентации
-function handleOrientationSelect(orientation: 'landscape' | 'portrait' | 'square') {
-  selectedOrientation.value = selectedOrientation.value === orientation ? null : orientation
+function handleOrientationSelect(orientationSlug: string) {
+  selectedOrientation.value = selectedOrientation.value === orientationSlug ? null : orientationSlug
   applyFilters()
 }
 
@@ -265,19 +255,23 @@ watch(
       setupInfiniteScroll()
     }, 300)
   },
-  { immediate: false }
+  { immediate: true }
 )
 
 onMounted(async () => {
   try {
-    categories.value = await fetchCategoryList()
+    const [cats, orients] = await Promise.all([
+      fetchCategoryList(),
+      getOrientations()
+    ])
+    categories.value = cats
+    orientations.value = orients
   } catch {
     categories.value = []
+    orientations.value = []
   }
-  initFromQuery()
   loadFavorites()
   loadSavedFiltersFlag()
-  loadPhotos(1)
   
   // Настройка бесконечного скролла после первой загрузки
   setTimeout(() => {
@@ -299,21 +293,21 @@ onUnmounted(() => {
         <div class="catalog-photos-header__top">
           <div>
             <h1 class="catalog-photos-header__title">
-              {{ categoryHeaderTitle ?? 'Каталог фотографий' }}
+              {{ categoryHeaderTitle ?? $t('catalog.title') }}
             </h1>
             <p v-if="totalPhotos > 0" class="catalog-photos-header__count">
-              {{ totalPhotos }} {{ totalPhotos === 1 ? 'фотография' : totalPhotos < 5 ? 'фотографии' : 'фотографий' }}
+              {{ totalPhotos }} {{ $t('catalog.photos') }}
             </p>
           </div>
           <div class="catalog-photos-header__actions">
             <button class="pill-btn" type="button" @click="saveFiltersToStorage">
-              Сохранить фильтры
+              {{ $t('catalog.saveFilters') }}
             </button>
             <button class="pill-btn" type="button" :disabled="!savedFilters" @click="restoreFiltersFromStorage">
-              Восстановить
+              {{ $t('catalog.restoreFilters') }}
             </button>
             <button class="pill-btn pill-btn--ghost" type="button" :class="{ 'pill-btn--active': showOnlyFavorites }" @click="showOnlyFavorites = !showOnlyFavorites">
-              {{ showOnlyFavorites ? 'Показать все' : 'Только избранное' }}
+              {{ showOnlyFavorites ? $t('catalog.showAll') : $t('catalog.onlyFavorites') }}
             </button>
           </div>
         </div>
@@ -321,6 +315,7 @@ onUnmounted(() => {
         <CatalogSearch
           v-model="searchQuery"
           :categories="categories"
+          :orientations="orientations"
           @search="handleSearch"
           @category-select="handleCategorySelect"
           @orientation-select="handleOrientationSelect"
@@ -340,7 +335,7 @@ onUnmounted(() => {
         <!-- Индикатор загрузки для следующей страницы -->
         <div v-if="loading && photos.length > 0" class="catalog-photos__loading-more">
           <div class="catalog-photos__spinner"></div>
-          <p>Загрузка фотографий...</p>
+          <p>{{ $t('catalog.loadingMore') }}</p>
         </div>
 
         <!-- Триггер для бесконечного скролла -->
@@ -352,7 +347,7 @@ onUnmounted(() => {
 
         <!-- Сообщение об окончании загрузки -->
         <div v-if="!hasMore && photos.length > 0" class="catalog-photos__end">
-          <p>Все фотографии загружены</p>
+          <p>{{ $t('catalog.allLoaded') }}</p>
         </div>
       </div>
     </section>

@@ -4,8 +4,10 @@ import { Teleport } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LicenseSelector from '../components/LicenseSelector.vue'
 import SimilarPhotos from '../components/SimilarPhotos.vue'
+import AuthorAvatar from '../components/common/AuthorAvatar.vue'
 import type { Photo } from '../data/photos'
 import { getPhoto, getSimilarPhotos } from '../services/photoService'
+import { User as UserIcon, Maximize2, ArrowRight } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +17,35 @@ const similarPhotos = ref<Photo[]>([])
 const loading = ref(true)
 const selectedLicenseId = ref('')
 const imageZoomed = ref(false)
+const isFavorite = ref(false)
+
+const FAVORITES_KEY = 'ft_favorites'
+
+function checkFavorite() {
+  const saved = localStorage.getItem(FAVORITES_KEY)
+  if (saved && photo.value) {
+    const ids = JSON.parse(saved)
+    isFavorite.value = ids.includes(photo.value.id)
+  }
+}
+
+function toggleFavorite() {
+  if (!photo.value) return
+  
+  const saved = localStorage.getItem(FAVORITES_KEY)
+  let ids = saved ? JSON.parse(saved) : []
+  
+  const idx = ids.indexOf(photo.value.id)
+  if (idx === -1) {
+    ids.push(photo.value.id)
+    isFavorite.value = true
+  } else {
+    ids.splice(idx, 1)
+    isFavorite.value = false
+  }
+  
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids))
+}
 
 const nextSimilarPhoto = computed(() => (similarPhotos.value.length > 0 ? similarPhotos.value[0] : null))
 
@@ -32,6 +63,7 @@ async function loadPhotoData() {
     }
 
     photo.value = photoData
+    checkFavorite()
 
     // Выбираем первую лицензию по умолчанию
     if (photoData.licenseTypes && photoData.licenseTypes.length > 0) {
@@ -75,25 +107,20 @@ function handleAddToCart() {
 }
 
 function toggleZoom() {
+  if (!photo.value) return
   imageZoomed.value = !imageZoomed.value
   
-  // Блокируем скролл страницы при zoom
   if (imageZoomed.value) {
     document.body.style.overflow = 'hidden'
-    // Устанавливаем фокус на модальное окно для поддержки ESC
-    nextTick(() => {
-      const modal = document.querySelector('.photo-zoom-modal') as HTMLElement
-      if (modal) {
-        modal.focus()
-      }
-    })
   } else {
     document.body.style.overflow = ''
   }
 }
 
 function formatDate(dateString: string) {
+  if (!dateString) return ''
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return dateString
   return date.toLocaleDateString('ru-RU', {
     year: 'numeric',
     month: 'long',
@@ -108,11 +135,11 @@ watch(
     if (route.params.id) {
       loadPhotoData()
     }
-  }
+  },
+  { immediate: true }
 )
 
 onMounted(() => {
-  loadPhotoData()
 })
 
 onUnmounted(() => {
@@ -139,18 +166,18 @@ onUnmounted(() => {
       <!-- Breadcrumbs -->
       <section class="photo-detail-breadcrumbs">
         <div class="container">
-          <nav aria-label="Навигационная цепочка">
+          <nav :aria-label="$t('common.back')">
             <ol class="breadcrumbs">
               <li class="breadcrumbs__item">
-                <router-link to="/">Главная</router-link>
+                <router-link to="/">{{ $t('home.title') }}</router-link>
               </li>
               <li class="breadcrumbs__item">
-                <router-link to="/catalog">Каталог</router-link>
+                <router-link to="/catalog">{{ $t('nav.catalog') }}</router-link>
               </li>
               <li class="breadcrumbs__item">
-                <router-link :to="`/catalog/photos?category=${photo.category}`">
+                <RouterLink :to="`/catalog/photos?category=${photo.category_slug}`">
                   {{ photo.category }}
-                </router-link>
+                </RouterLink>
               </li>
               <li class="breadcrumbs__item breadcrumbs__item--current" aria-current="page">
                 {{ photo.title }}
@@ -174,9 +201,9 @@ onUnmounted(() => {
               <button
                 class="photo-detail-hero__zoom-btn"
                 @click="toggleZoom"
-                aria-label="Увеличить изображение"
+                :aria-label="$t('common.search')"
               >
-                🔍
+                <Maximize2 :size="20" />
               </button>
             </div>
           </div>
@@ -196,15 +223,18 @@ onUnmounted(() => {
             </div>
 
             <!-- Автор -->
-            <div class="photo-detail-hero__author">
-              <div v-if="photo.author.avatarUrl" class="photo-detail-hero__author-avatar">
-                <img :src="photo.author.avatarUrl" :alt="photo.author.name" />
-              </div>
-              <div class="photo-detail-hero__author-info">
-                <span class="photo-detail-hero__author-label">Автор</span>
-                <strong class="photo-detail-hero__author-name">{{ photo.author.name }}</strong>
-              </div>
+            <RouterLink :to="`/author/@${photo.author.username}`" class="photo-detail-hero__author">
+              <AuthorAvatar 
+                :src="photo.author.avatarUrl" 
+                :name="photo.author.name" 
+                size="md" 
+              />
+            <div class="photo-detail-hero__author-info">
+              <span class="photo-detail-hero__author-label">{{ $t('photo.author') }}</span>
+              <strong class="photo-detail-hero__author-name">{{ photo.author.name }}</strong>
             </div>
+              <ArrowRight class="ml-auto text-muted opacity-50" :size="18" />
+            </RouterLink>
 
             <!-- Теги -->
             <div v-if="photo.tags && photo.tags.length > 0" class="photo-detail-hero__tags">
@@ -214,18 +244,18 @@ onUnmounted(() => {
             <!-- Статистика -->
             <div v-if="photo.views || photo.downloads" class="photo-detail-hero__stats">
               <div v-if="photo.views" class="photo-detail-hero__stat">
-                <span class="photo-detail-hero__stat-label">Просмотров:</span>
+                <span class="photo-detail-hero__stat-label">{{ $t('photo.views') }}:</span>
                 <span class="photo-detail-hero__stat-value">{{ photo.views }}</span>
               </div>
               <div v-if="photo.downloads" class="photo-detail-hero__stat">
-                <span class="photo-detail-hero__stat-label">Скачиваний:</span>
+                <span class="photo-detail-hero__stat-label">{{ $t('photo.downloads') }}:</span>
                 <span class="photo-detail-hero__stat-value">{{ photo.downloads }}</span>
               </div>
             </div>
 
             <!-- Размеры -->
             <div v-if="photo.dimensions" class="photo-detail-hero__dimensions">
-              <span class="photo-detail-hero__dimensions-label">Размер:</span>
+              <span class="photo-detail-hero__dimensions-label">{{ $t('photo.dimensions') }}:</span>
               <span class="photo-detail-hero__dimensions-value">
                 {{ photo.dimensions.width }} × {{ photo.dimensions.height }} px
               </span>
@@ -245,23 +275,25 @@ onUnmounted(() => {
 
             <div class="photo-detail-licenses__actions">
               <button class="btn btn--primary photo-detail-licenses__buy" @click="handleBuy">
-                Купить за ₽{{ totalPrice.toLocaleString() }}
+                {{ $t('photo.buy') }} ₽{{ totalPrice.toLocaleString() }}
               </button>
               <button
-                class="btn btn--ghost photo-detail-licenses__cart"
-                @click="handleAddToCart"
+                class="btn btn--outline photo-detail-licenses__cart"
+                :class="{ 'btn--active': isFavorite }"
+                @click="toggleFavorite"
               >
-                Добавить в корзину
+                <span v-if="isFavorite" class="mr-1">♥</span>
+                {{ isFavorite ? $t('common.reset') : $t('common.save') }}
               </button>
             </div>
 
             <div class="photo-detail-licenses__nav" v-if="nextSimilarPhoto">
-              <router-link :to="`/photo/${nextSimilarPhoto.id}`" class="nav-link">
-                Следующее фото по теме → {{ nextSimilarPhoto.title }}
-              </router-link>
-              <router-link :to="`/catalog/photos?category=${photo.category}`" class="nav-link nav-link--muted">
-                Вернуться в категорию «{{ photo.category }}»
-              </router-link>
+              <RouterLink :to="`/photo/${nextSimilarPhoto.id}`" class="nav-link">
+                {{ $t('common.actions') }} → {{ nextSimilarPhoto.title }}
+              </RouterLink>
+              <RouterLink :to="`/catalog/photos?category=${photo.category_slug}`" class="nav-link nav-link--muted">
+                {{ $t('common.back') }} «{{ photo.category }}»
+              </RouterLink>
             </div>
           </div>
         </div>
@@ -272,43 +304,30 @@ onUnmounted(() => {
     </template>
   </main>
 
-  <!-- Модальное окно для zoom изображения -->
-  <Teleport to="body">
-    <div
-      v-if="imageZoomed && photo"
-      class="photo-zoom-modal"
-      @click.self="toggleZoom"
-      @keydown.esc.prevent="toggleZoom"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Полноэкранный просмотр изображения"
-      tabindex="-1"
-    >
-      <button
-        class="photo-zoom-modal__close"
-        @click="toggleZoom"
-        aria-label="Закрыть"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M18 6L6 18M6 6L18 18"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-      <div class="photo-zoom-modal__content">
-        <img
-          :src="photo.imageUrl"
-          :alt="photo.title"
-          class="photo-zoom-modal__img"
+    <Teleport to="body">
+      <transition name="fade">
+        <div
+          v-if="imageZoomed && photo"
+          class="photo-zoom-modal"
           @click="toggleZoom"
-        />
-      </div>
-    </div>
-  </Teleport>
+        >
+          <div class="photo-zoom-modal__content">
+            <img
+              :src="photo.imageUrl"
+              :alt="photo.title"
+              class="photo-zoom-modal__img"
+            />
+            <button
+              class="photo-zoom-modal__close"
+              @click.stop="toggleZoom"
+              :aria-label="$t('common.cancel')"
+            >
+              <Maximize2 :size="24" />
+            </button>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
 </template>
 
 <style scoped>
@@ -444,11 +463,14 @@ onUnmounted(() => {
   background: rgba(15, 23, 42, 0.05);
   cursor: zoom-in;
   transition: transform 0.3s ease;
+  max-height: 80vh;
 }
 
 .photo-detail-hero__img {
   width: 100%;
   height: auto;
+  max-height: 80vh;
+  object-fit: contain;
   display: block;
   transition: transform 0.3s ease;
 }
@@ -525,10 +547,20 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(236, 253, 245, 0.4), rgba(236, 253, 245, 0.2));
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  padding: 1.25rem 1.5rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.6), rgba(236, 253, 245, 0.3));
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.photo-detail-hero__author:hover {
+  transform: translateY(-4px);
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.8), rgba(236, 253, 245, 0.5));
+  border-color: var(--color-accent);
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.12);
 }
 
 .photo-detail-hero__author-avatar {
@@ -547,7 +579,7 @@ onUnmounted(() => {
 
 .photo-detail-hero__author-info {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .photo-detail-hero__author-label {
@@ -700,74 +732,76 @@ onUnmounted(() => {
 .photo-zoom-modal {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 100000;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(4px);
-  padding: 2rem;
-  animation: fadeIn 0.2s ease;
-  outline: none;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.photo-zoom-modal__close {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--color-text);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 10000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.photo-zoom-modal__close:hover {
-  background: #ffffff;
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(20px);
+  cursor: zoom-out;
 }
 
 .photo-zoom-modal__content {
-  width: 100%;
-  height: 100%;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  padding: 2rem;
 }
 
 .photo-zoom-modal__img {
   max-width: 100%;
   max-height: 100%;
-  width: auto;
-  height: auto;
   object-fit: contain;
-  object-position: center;
-  cursor: zoom-out;
-  animation: zoomIn 0.3s ease;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+}
+
+.photo-zoom-modal__close {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: #ffffff;
+  color: #0f172a;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.photo-zoom-modal__close:hover {
+  transform: scale(1.1) rotate(90deg);
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+/* Animations */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-active .photo-zoom-modal__img {
+  animation: zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes zoomIn {
   from {
-    transform: scale(0.9);
+    transform: scale(0.85);
     opacity: 0;
   }
   to {
