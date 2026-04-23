@@ -6,16 +6,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zlib1g \
     libpq-dev \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Установка зависимостей Python
+# Зависимости: используем кеширование pip для ускорения повторных билдов
+ENV PIP_DEFAULT_TIMEOUT=120
+ARG PIP_INDEX_URL=
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    if [ -n "$PIP_INDEX_URL" ]; then \
+      pip config set global.index-url "$PIP_INDEX_URL"; \
+    fi \
+    && pip install --retries=8 --default-timeout=120 --no-cache-dir -r requirements.txt
 
 # Копирование кода
 COPY . .
+
 
 # Настройка переменных окружения
 ENV PYTHONUNBUFFERED=1

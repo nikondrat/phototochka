@@ -8,9 +8,12 @@
         "build": "vue-tsc -b && vite build && cp dist/index.html dist/404.html",
         "preview": "vite preview",
         "lint": "vue-tsc --noEmit",
+        "test:e2e": "playwright test",
         "capture:readme": "node scripts/capture_screenshots.cjs"
     },
     "dependencies": {
+        "blurhash": "^2.0.5",
+        "lucide-vue-next": "^1.0.0",
         "vue": "^3.5.24",
         "vue-router": "^4.6.3"
     },

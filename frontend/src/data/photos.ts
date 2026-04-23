@@ -22,10 +22,16 @@ export interface LicenseType {
 
 export interface Photo {
   id: string
+  /** С API (DRF camelCase) — предпочтительный слаг для URL. */
+  publicId?: string
   title: string
   description?: string
   category: string
   imageUrl: string
+  /** С API: производные и BlurHash после media pipeline. */
+  imageWebp?: string | null
+  imageAvif?: string | null
+  blurHash?: string | null
   thumbnailUrl?: string
   orientation: 'landscape' | 'portrait' | 'square'
   tags: string[]

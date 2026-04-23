@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { categories } from "../../data/homepage";
+import { adminCategoryNames } from "../../data/adminDemo";
 import AdminIcon from "./AdminIcon.vue";
 
-const allCategories = ref<string[]>([...categories]);
+const allCategories = ref<string[]>([...adminCategoryNames]);
 const newCategory = ref("");
 const isAdding = ref(false);
 

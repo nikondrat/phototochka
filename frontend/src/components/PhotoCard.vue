@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppImage from './common/AppImage.vue'
 import AdminIcon from './admin/AdminIcon.vue'
 
 interface Photo {
@@ -6,6 +7,9 @@ interface Photo {
   title: string
   category: string
   imageUrl: string
+  imageWebp?: string | null
+  imageAvif?: string | null
+  blurHash?: string | null
   tags?: string[]
   views?: number
   downloads?: number
@@ -61,7 +65,13 @@ function getStatusClass(status: string) {
 <template>
   <div :class="['photo-card', `photo-card--${variant}`]">
     <div class="photo-card__image">
-      <img :src="photo.imageUrl" :alt="photo.title" />
+      <AppImage
+        :src="photo.imageUrl"
+        :alt="photo.title"
+        :blur-hash="photo.blurHash"
+        :webp-url="photo.imageWebp"
+        :avif-url="photo.imageAvif"
+      />
       <button
         v-if="showFavorite"
         class="photo-card__fav"
@@ -156,7 +166,13 @@ function getStatusClass(status: string) {
   min-height: auto;
 }
 
-.photo-card__image img {
+.photo-card__image :deep(.app-image) {
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+}
+
+.photo-card__image :deep(img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -197,7 +213,7 @@ function getStatusClass(status: string) {
   color: var(--color-accent);
 }
 
-.photo-card:hover .photo-card__image img {
+.photo-card:hover .photo-card__image :deep(img) {
   transform: scale(1.05);
 }
 

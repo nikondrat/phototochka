@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BenefitItem } from '../data/homepage'
+import type { BenefitItem } from '../types/showcase'
 
 interface Props {
   benefits: BenefitItem[]

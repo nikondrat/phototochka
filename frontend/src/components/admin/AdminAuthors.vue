@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { authors, type AuthorCard } from '../../data/homepage'
+import { authors } from '../../data/adminDemo'
+import type { AuthorCard } from '../../types/showcase'
 import AdminIcon from './AdminIcon.vue'
 
 const allAuthors = ref<AuthorCard[]>([...authors])
@@ -91,7 +92,14 @@ function cancelEdit() {
       >
         <div class="author-card__header">
           <div class="author-card__avatar">
-            <img :src="author.avatarUrl" :alt="author.name" />
+            <img
+              v-if="author.avatarUrl"
+              :src="author.avatarUrl"
+              :alt="author.name"
+            />
+            <span v-else class="author-card__avatar-fallback" aria-hidden="true">{{
+              author.name.charAt(0).toUpperCase()
+            }}</span>
           </div>
           <div class="author-card__actions">
             <button

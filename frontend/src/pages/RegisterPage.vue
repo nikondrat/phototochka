@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import santoriniSunset from "../assets/images/santorini-sunset.jpg";
+import { auth } from "../utils/auth";
+import { formatApiFormError } from "../utils/apiErrors";
+import { MIN_PASSWORD_LENGTH } from "../constants/auth";
+import { Eye, EyeOff, User, Mail, Lock } from "lucide-vue-next";
 
 const router = useRouter();
+const route = useRoute();
 
 const name = ref("");
 const email = ref("");
@@ -36,8 +41,8 @@ async function handleSubmit(e: Event) {
     return;
   }
 
-  if (password.value.length < 8) {
-    error.value = "Пароль должен содержать минимум 8 символов";
+  if (password.value.length < MIN_PASSWORD_LENGTH) {
+    error.value = `Пароль должен содержать минимум ${MIN_PASSWORD_LENGTH} символов`;
     isLoading.value = false;
     return;
   }
@@ -49,11 +54,18 @@ async function handleSubmit(e: Event) {
   }
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    router.push("/login");
+    await auth.register({
+      email: email.value.trim(),
+      password: password.value,
+      displayName: name.value.trim(),
+    });
+    const redirect = (route.query.redirect as string) || "/";
+    router.push(redirect);
   } catch (err) {
-    error.value = "Ошибка регистрации. Попробуйте позже";
+    error.value = formatApiFormError(
+      err,
+      "Ошибка регистрации. Попробуйте позже"
+    );
   } finally {
     isLoading.value = false;
   }
@@ -82,7 +94,6 @@ async function handleSubmit(e: Event) {
           alt="Закат на Санторини"
           class="auth-visual__image"
           loading="eager"
-          ffffff
         />
       </div>
 
@@ -135,30 +146,7 @@ async function handleSubmit(e: Event) {
             <div class="form-group">
               <label for="name" class="form-label">Имя</label>
               <div class="form-input-wrapper">
-                <svg
-                  class="form-input-icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M10 10C12.7614 10 15 7.76142 15 5C15 2.23858 12.7614 0 10 0C7.23858 0 5 2.23858 5 5C5 7.76142 7.23858 10 10 10Z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M0 18.3333C0 14.6512 2.98477 11.6667 6.66667 11.6667H13.3333C17.0152 11.6667 20 14.6512 20 18.3333V20H0V18.3333Z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <User class="form-input-icon" :size="20" />
                 <input
                   id="name"
                   v-model="name"
@@ -174,23 +162,7 @@ async function handleSubmit(e: Event) {
             <div class="form-group">
               <label for="email" class="form-label">Email адрес</label>
               <div class="form-input-wrapper">
-                <svg
-                  class="form-input-icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M2.5 6.66666L9.0755 11.0504C9.63533 11.4236 10.3647 11.4236 10.9245 11.0504L17.5 6.66666M3.33333 15.8333H16.6667C17.5871 15.8333 18.3333 15.0871 18.3333 14.1667V5.83333C18.3333 4.91286 17.5871 4.16666 16.6667 4.16666H3.33333C2.41286 4.16666 1.66666 4.91286 1.66666 5.83333V14.1667C1.66666 15.0871 2.41286 15.8333 3.33333 15.8333Z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <Mail class="form-input-icon" :size="20" />
                 <input
                   id="email"
                   v-model="email"
@@ -206,30 +178,7 @@ async function handleSubmit(e: Event) {
             <div class="form-group">
               <label for="password" class="form-label">Пароль</label>
               <div class="form-input-wrapper">
-                <svg
-                  class="form-input-icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M15.8333 9.16666H4.16666C3.24619 9.16666 2.5 9.91286 2.5 10.8333V16.6667C2.5 17.5871 3.24619 18.3333 4.16666 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V10.8333C17.5 9.91286 16.7538 9.16666 15.8333 9.16666Z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M5.83333 9.16666V5.83333C5.83333 4.72824 6.27232 3.66842 7.05372 2.88702C7.83512 2.10562 8.89494 1.66666 10 1.66666C11.1051 1.66666 12.1649 2.10562 12.9463 2.88702C13.7277 3.66842 14.1667 4.72824 14.1667 5.83333V9.16666"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <Lock class="form-input-icon" :size="20" />
                 <input
                   id="password"
                   v-model="password"
@@ -238,7 +187,7 @@ async function handleSubmit(e: Event) {
                   placeholder="Минимум 8 символов"
                   required
                   autocomplete="new-password"
-                  minlength="8"
+                  :minlength="MIN_PASSWORD_LENGTH"
                 />
                 <button
                   type="button"
@@ -248,32 +197,8 @@ async function handleSubmit(e: Event) {
                     showPassword ? 'Скрыть пароль' : 'Показать пароль'
                   "
                 >
-                  <svg
-                    v-if="showPassword"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 3C5 3 1.73 7.11 1 10C1.73 12.89 5 17 10 17C15 17 18.27 12.89 19 10C18.27 7.11 15 3 10 3ZM10 15C7.24 15 5 12.76 5 10C5 7.24 7.24 5 10 5C12.76 5 15 7.24 15 10C15 12.76 12.76 15 10 15ZM10 7C8.34 7 7 8.34 7 10C7 11.66 8.34 13 10 13C11.66 13 13 11.66 13 10C13 8.34 11.66 7 10 7Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  <svg
-                    v-else
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.71 3.16L1.29 1.75L2.98 0.05L4.39 1.46L5.7 2.77C3.94 3.49 2.5 4.62 1.5 6.05C0.5 7.48 0 9.16 0 10.05C0 10.94 0.5 12.62 1.5 14.05C2.5 15.48 3.94 16.61 5.7 17.33L4.39 18.64L2.98 20.05L1.29 18.35L2.71 16.94C1.19 15.92 0 14.35 0 12.55C0 10.75 1.19 9.18 2.71 8.16L2.71 3.16ZM17.29 8.16C18.81 9.18 20 10.75 20 12.55C20 14.35 18.81 15.92 17.29 16.94L18.71 18.35L17.02 20.05L15.61 18.64L14.3 17.33C16.06 16.61 17.5 15.48 18.5 14.05C19.5 12.62 20 10.94 20 10.05C20 9.16 19.5 7.48 18.5 6.05C17.5 4.62 16.06 3.49 14.3 2.77L15.61 1.46L17.02 0.05L18.71 1.75L17.29 3.16V8.16ZM10 6.05C11.66 6.05 13 7.39 13 9.05C13 9.62 12.89 10.16 12.7 10.66L9.34 7.3C9.84 7.11 10.38 7 10.95 7C10.95 6.39 10.66 5.84 10.25 5.43C9.84 5.02 9.29 4.73 8.68 4.73C8.07 4.73 7.52 5.02 7.11 5.43C6.7 5.84 6.41 6.39 6.41 7C6.41 7.61 6.7 8.16 7.11 8.57C7.52 8.98 8.07 9.27 8.68 9.27C9.29 9.27 9.84 8.98 10.25 8.57C10.66 8.16 10.95 7.61 10.95 7H10V6.05Z"
-                      fill="currentColor"
-                    />
-                  </svg>
+                  <Eye v-if="showPassword" :size="20" />
+                  <EyeOff v-else :size="20" />
                 </button>
               </div>
             </div>
@@ -283,30 +208,7 @@ async function handleSubmit(e: Event) {
                 >Подтвердите пароль</label
               >
               <div class="form-input-wrapper">
-                <svg
-                  class="form-input-icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M15.8333 9.16666H4.16666C3.24619 9.16666 2.5 9.91286 2.5 10.8333V16.6667C2.5 17.5871 3.24619 18.3333 4.16666 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V10.8333C17.5 9.91286 16.7538 9.16666 15.8333 9.16666Z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M5.83333 9.16666V5.83333C5.83333 4.72824 6.27232 3.66842 7.05372 2.88702C7.83512 2.10562 8.89494 1.66666 10 1.66666C11.1051 1.66666 12.1649 2.10562 12.9463 2.88702C13.7277 3.66842 14.1667 4.72824 14.1667 5.83333V9.16666"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <Lock class="form-input-icon" :size="20" />
                 <input
                   id="confirmPassword"
                   v-model="confirmPassword"
@@ -324,32 +226,8 @@ async function handleSubmit(e: Event) {
                     showConfirmPassword ? 'Скрыть пароль' : 'Показать пароль'
                   "
                 >
-                  <svg
-                    v-if="showConfirmPassword"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 3C5 3 1.73 7.11 1 10C1.73 12.89 5 17 10 17C15 17 18.27 12.89 19 10C18.27 7.11 15 3 10 3ZM10 15C7.24 15 5 12.76 5 10C5 7.24 7.24 5 10 5C12.76 5 15 7.24 15 10C15 12.76 12.76 15 10 15ZM10 7C8.34 7 7 8.34 7 10C7 11.66 8.34 13 10 13C11.66 13 13 11.66 13 10C13 8.34 11.66 7 10 7Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  <svg
-                    v-else
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.71 3.16L1.29 1.75L2.98 0.05L4.39 1.46L5.7 2.77C3.94 3.49 2.5 4.62 1.5 6.05C0.5 7.48 0 9.16 0 10.05C0 10.94 0.5 12.62 1.5 14.05C2.5 15.48 3.94 16.61 5.7 17.33L4.39 18.64L2.98 20.05L1.29 18.35L2.71 16.94C1.19 15.92 0 14.35 0 12.55C0 10.75 1.19 9.18 2.71 8.16L2.71 3.16ZM17.29 8.16C18.81 9.18 20 10.75 20 12.55C20 14.35 18.81 15.92 17.29 16.94L18.71 18.35L17.02 20.05L15.61 18.64L14.3 17.33C16.06 16.61 17.5 15.48 18.5 14.05C19.5 12.62 20 10.94 20 10.05C20 9.16 19.5 7.48 18.5 6.05C17.5 4.62 16.06 3.49 14.3 2.77L15.61 1.46L17.02 0.05L18.71 1.75L17.29 3.16V8.16ZM10 6.05C11.66 6.05 13 7.39 13 9.05C13 9.62 12.89 10.16 12.7 10.66L9.34 7.3C9.84 7.11 10.38 7 10.95 7C10.95 6.39 10.66 5.84 10.25 5.43C9.84 5.02 9.29 4.73 8.68 4.73C8.07 4.73 7.52 5.02 7.11 5.43C6.7 5.84 6.41 6.39 6.41 7C6.41 7.61 6.7 8.16 7.11 8.57C7.52 8.98 8.07 9.27 8.68 9.27C9.29 9.27 9.84 8.98 10.25 8.57C10.66 8.16 10.95 7.61 10.95 7H10V6.05Z"
-                      fill="currentColor"
-                    />
-                  </svg>
+                  <Eye v-if="showConfirmPassword" :size="20" />
+                  <EyeOff v-else :size="20" />
                 </button>
               </div>
             </div>
@@ -385,7 +263,7 @@ async function handleSubmit(e: Event) {
 .auth-page {
   min-height: 100vh;
   display: flex;
-  background: #ffffff;
+  background: var(--color-auth-page-bg);
 }
 
 .auth-layout {
@@ -401,7 +279,11 @@ async function handleSubmit(e: Event) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-auth-visual-start) 0%,
+    var(--color-auth-visual-end) 100%
+  );
   overflow: hidden;
 }
 
@@ -420,9 +302,9 @@ async function handleSubmit(e: Event) {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(16, 185, 129, 0.15) 0%,
-    rgba(15, 23, 42, 0.85) 50%,
-    rgba(15, 23, 42, 0.95) 100%
+    var(--color-auth-overlay-start) 0%,
+    var(--color-auth-overlay-mid) 50%,
+    var(--color-auth-overlay-end) 100%
   );
   z-index: 1;
 }
@@ -432,7 +314,7 @@ async function handleSubmit(e: Event) {
   z-index: 2;
   padding: 3rem;
   max-width: 500px;
-  color: #ffffff;
+  color: var(--color-auth-on-visual);
 }
 
 .auth-visual__logo {
@@ -444,7 +326,7 @@ async function handleSubmit(e: Event) {
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 4rem;
-  color: #ffffff;
+  color: var(--color-auth-on-visual);
 }
 
 .auth-visual__logo-dot {
@@ -452,7 +334,7 @@ async function handleSubmit(e: Event) {
   block-size: 20px;
   border-radius: 50%;
   background: var(--color-accent);
-  box-shadow: 0 0 24px rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 24px var(--color-auth-logo-glow);
 }
 
 .auth-visual__quote {
@@ -466,12 +348,12 @@ async function handleSubmit(e: Event) {
   font-weight: 600;
   line-height: 1.3;
   margin: 0;
-  color: #ffffff;
+  color: var(--color-auth-on-visual);
 }
 
 .auth-visual__quote-author {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-auth-on-visual-muted);
   margin: 0;
   font-style: italic;
 }
@@ -482,7 +364,12 @@ async function handleSubmit(e: Event) {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: linear-gradient(180deg, #ffffff 0%, #fafffe 30%, #ffffff 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-auth-form-panel-top) 0%,
+    var(--color-auth-form-panel-mid) 30%,
+    var(--color-auth-form-panel-top) 100%
+  );
   overflow-y: auto;
 }
 
@@ -524,9 +411,9 @@ async function handleSubmit(e: Event) {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.25rem;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 14px;
+  background: var(--color-auth-error-surface);
+  border: 1px solid var(--color-auth-error-border);
+  border-radius: var(--radius-auth-card);
   color: var(--color-danger);
   font-size: 0.9rem;
   line-height: 1.4;
@@ -565,11 +452,11 @@ async function handleSubmit(e: Event) {
 .form-input {
   width: 100%;
   padding: 1rem 1.1rem 1rem 3.25rem;
-  border: 1.5px solid rgba(15, 23, 42, 0.12);
-  border-radius: 14px;
+  border: 1.5px solid var(--color-auth-form-input-border);
+  border-radius: var(--radius-auth-card);
   font-size: 0.95rem;
   font-family: inherit;
-  background: #ffffff;
+  background: var(--color-auth-form-input-surface);
   transition: all 0.2s ease;
   color: var(--color-text);
 }
@@ -577,8 +464,8 @@ async function handleSubmit(e: Event) {
 .form-input:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
-  background: #ffffff;
+  box-shadow: 0 0 0 4px var(--color-auth-form-input-focus-shadow);
+  background: var(--color-auth-form-input-surface);
 }
 
 .form-input:focus + .form-toggle-password,
@@ -631,8 +518,8 @@ async function handleSubmit(e: Event) {
 .auth-submit__spinner {
   inline-size: 16px;
   block-size: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid var(--color-auth-spinner-ring);
+  border-top-color: var(--color-auth-spinner-edge);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
@@ -653,7 +540,7 @@ async function handleSubmit(e: Event) {
   gap: 1rem;
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-top: 1px solid var(--color-auth-footer-divider);
 }
 
 .auth-footer__text {

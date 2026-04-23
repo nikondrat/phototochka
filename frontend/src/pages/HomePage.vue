@@ -1,91 +1,166 @@
 <script setup lang="ts">
-import HeroBanner from '../components/HeroBanner.vue'
-import SearchFilters from '../components/SearchFilters.vue'
-import PhotoCarousel from '../components/PhotoCarousel.vue'
-import CategoryGrid from '../components/CategoryGrid.vue'
-import AuthorShowcase from '../components/AuthorShowcase.vue'
-import BenefitsSection from '../components/BenefitsSection.vue'
-import DualCTA from '../components/DualCTA.vue'
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import HeroBanner from "../components/HeroBanner.vue";
+import SearchFilters from "../components/SearchFilters.vue";
+import PhotoCarousel from "../components/PhotoCarousel.vue";
+import CategoryGrid from "../components/CategoryGrid.vue";
+import AuthorShowcase from "../components/AuthorShowcase.vue";
+import BenefitsSection from "../components/BenefitsSection.vue";
+import DualCTA from "../components/DualCTA.vue";
+import { fetchShowcase } from "../services/showcaseService";
+import type { ShowcasePayload } from "../types/showcase";
+import { formatApiFormError } from "../utils/apiErrors";
 
-import {
-  popularPhotos,
-  newPhotos,
-  categories,
-  authors,
-  benefits,
-} from '../data/homepage'
+const router = useRouter();
+
+const loadState = ref<"loading" | "ok" | "error">("loading");
+const errorMessage = ref("");
+const showcase = ref<ShowcasePayload | null>(null);
+
+async function loadShowcase() {
+  loadState.value = "loading";
+  errorMessage.value = "";
+  try {
+    showcase.value = await fetchShowcase();
+    loadState.value = "ok";
+  } catch (e) {
+    loadState.value = "error";
+    errorMessage.value = formatApiFormError(
+      e,
+      "Не удалось загрузить данные главной страницы"
+    );
+  }
+}
+
+function retry() {
+  void loadShowcase();
+}
+
+function onCategorySelect(slug: string) {
+  router.push({ path: "/catalog/photos", query: { category: slug } });
+}
+
+onMounted(() => {
+  void loadShowcase();
+});
 </script>
 
 <template>
   <main>
-    <HeroBanner :photos="popularPhotos" />
-    <SearchFilters :categories="categories" />
-    <PhotoCarousel
-      section-id="catalog"
-      eyebrow="Новинки каталога"
-      title="Последние добавления"
-      description="Новые кадры от авторов, загруженные в этом месяце. Следите за обновлениями и сохраняйте понравившиеся работы."
-      :photos="newPhotos"
-    />
-    <CategoryGrid :categories="categories" />
-    <section class="trust-block">
-      <div class="container trust-block__container">
-        <div>
-          <p class="trust-block__eyebrow">Доверие и качество</p>
-          <h2 class="trust-block__title">Проверенные авторы и прозрачные лицензии</h2>
-          <p class="trust-block__text">
-            Мы отбираем работы вручную и показываем условия лицензии до покупки, чтобы снизить риск возвратов
-            и повысить уверенность покупателя с первого визита.
-          </p>
-          <div class="trust-block__badges">
-            <div class="trust-block__badge">
-              <strong>12 400+</strong>
-              <span>верифицированных авторов</span>
-            </div>
-            <div class="trust-block__badge">
-              <strong>4,9/5</strong>
-              <span>оценка по покупкам и поддержке</span>
-            </div>
-            <div class="trust-block__badge">
-              <strong>99,9%</strong>
-              <span>успешных загрузок без ошибок</span>
+    <div
+      v-if="loadState === 'loading'"
+      class="home-state home-state--loading container"
+      aria-busy="true"
+    >
+      <p>Загружаем подборки…</p>
+    </div>
+
+    <div
+      v-else-if="loadState === 'error'"
+      class="home-state home-state--error container"
+      role="alert"
+    >
+      <p>{{ errorMessage }}</p>
+      <button type="button" class="btn btn--primary" @click="retry">
+        Повторить
+      </button>
+    </div>
+
+    <template v-else-if="loadState === 'ok' && showcase">
+      <HeroBanner v-if="showcase.heroPhotos.length" :photos="showcase.heroPhotos" />
+      <section
+        v-else
+        class="home-empty-hero container"
+        aria-labelledby="empty-hero-title"
+      >
+        <h1 id="empty-hero-title" class="home-empty-hero__title">
+          ФотоТочка
+        </h1>
+        <p class="home-empty-hero__text">
+          Пока нет фотографий для витрины. Загрузите контент или выполните сидирование БД.
+        </p>
+        <RouterLink class="btn btn--primary" to="/catalog">Открыть каталог</RouterLink>
+      </section>
+
+      <SearchFilters
+        :categories="showcase.categories"
+        @category-select="onCategorySelect"
+      />
+      <PhotoCarousel
+        section-id="catalog"
+        eyebrow="Новинки каталога"
+        title="Последние добавления"
+        description="Новые кадры от авторов. Следите за обновлениями и сохраняйте понравившиеся работы."
+        :photos="showcase.newPhotos"
+      />
+      <CategoryGrid :categories="showcase.categories" />
+      <section class="trust-block">
+        <div class="container trust-block__container">
+          <div>
+            <p class="trust-block__eyebrow">Доверие и качество</p>
+            <h2 class="trust-block__title">
+              Проверенные авторы и прозрачные лицензии
+            </h2>
+            <p class="trust-block__text">
+              Мы отбираем работы вручную и показываем условия лицензии до покупки, чтобы снизить
+              риск возвратов и повысить уверенность покупателя с первого визита.
+            </p>
+            <div class="trust-block__badges">
+              <div class="trust-block__badge">
+                <strong>12 400+</strong>
+                <span>верифицированных авторов</span>
+              </div>
+              <div class="trust-block__badge">
+                <strong>4,9/5</strong>
+                <span>оценка по покупкам и поддержке</span>
+              </div>
+              <div class="trust-block__badge">
+                <strong>99,9%</strong>
+                <span>успешных загрузок без ошибок</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="trust-block__panel">
-          <p class="trust-block__panel-title">Подтверждение качества</p>
-          <ul class="trust-block__list">
-            <li>Модерация и чёткие условия лицензии</li>
-            <li>Похожие работы под карточкой для снижения отказов</li>
-            <li>История просмотров и избранное — без авторизации</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-    <AuthorShowcase :authors="authors" />
-    <section class="subscribe-block">
-      <div class="container subscribe-block__container">
-        <div>
-          <p class="subscribe-block__eyebrow">Возвраты и повторные визиты</p>
-          <h3 class="subscribe-block__title">Получайте подборки свежих работ каждую неделю</h3>
-          <p class="subscribe-block__text">
-            Сохраните фильтры и подпишитесь на обновления, чтобы возвращаться к релевантным коллекциям без повторного поиска.
-          </p>
-          <div class="subscribe-block__chips">
-            <span class="chip">Email-дайджест</span>
-            <span class="chip">Push-уведомления</span>
-            <span class="chip">Сохранённые фильтры</span>
+          <div class="trust-block__panel">
+            <p class="trust-block__panel-title">Подтверждение качества</p>
+            <ul class="trust-block__list">
+              <li>Модерация и чёткие условия лицензии</li>
+              <li>Похожие работы под карточкой для снижения отказов</li>
+              <li>История просмотров и избранное — без авторизации</li>
+            </ul>
           </div>
         </div>
-        <form class="subscribe-block__form" onsubmit="return false;">
-          <input type="email" name="email" placeholder="Ваш email" required />
-          <button type="submit">Подписаться</button>
-          <p class="subscribe-block__hint">Можно без регистрации — подтверждение придёт на почту.</p>
-        </form>
-      </div>
-    </section>
-    <BenefitsSection :benefits="benefits" />
-    <DualCTA />
+      </section>
+      <AuthorShowcase v-if="showcase.authors.length" :authors="showcase.authors" />
+      <section class="subscribe-block">
+        <div class="container subscribe-block__container">
+          <div>
+            <p class="subscribe-block__eyebrow">Возвраты и повторные визиты</p>
+            <h3 class="subscribe-block__title">
+              Получайте подборки свежих работ каждую неделю
+            </h3>
+            <p class="subscribe-block__text">
+              Сохраните фильтры и подпишитесь на обновления, чтобы возвращаться к релевантным
+              коллекциям без повторного поиска.
+            </p>
+            <div class="subscribe-block__chips">
+              <span class="chip">Email-дайджест</span>
+              <span class="chip">Push-уведомления</span>
+              <span class="chip">Сохранённые фильтры</span>
+            </div>
+          </div>
+          <form class="subscribe-block__form" onsubmit="return false;">
+            <input type="email" name="email" placeholder="Ваш email" required />
+            <button type="submit">Подписаться</button>
+            <p class="subscribe-block__hint">
+              Можно без регистрации — подтверждение придёт на почту.
+            </p>
+          </form>
+        </div>
+      </section>
+      <BenefitsSection :benefits="showcase.benefits" />
+      <DualCTA />
+    </template>
   </main>
   <RouterLink class="floating-cta" to="/catalog">Каталог</RouterLink>
 </template>
@@ -95,6 +170,37 @@ main {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.home-state {
+  padding: 3rem 0 2rem;
+  text-align: center;
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+}
+
+.home-state--error {
+  color: var(--color-danger);
+}
+
+.home-empty-hero {
+  padding: calc(var(--header-height) + 2rem) 0 2rem;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.home-empty-hero__title {
+  font-family: "Playfair Display", "Inter", serif;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  margin: 0 0 0.75rem;
+}
+
+.home-empty-hero__text {
+  color: var(--color-text-muted);
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
 }
 
 .floating-cta {
@@ -305,4 +411,3 @@ main {
   }
 }
 </style>
-

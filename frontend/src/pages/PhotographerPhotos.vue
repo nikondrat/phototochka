@@ -1,137 +1,65 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import PhotographerLayout from '../components/PhotographerLayout.vue'
 import AdminIcon from '../components/admin/AdminIcon.vue'
 import PhotoCard from '../components/PhotoCard.vue'
-import alpineLake from '../assets/images/alpine-lake.jpg'
-import aerialLandscape from '../assets/images/aerial-landscape.jpg'
-import creativeDesk from '../assets/images/creative-desk.jpg'
-import dawnTrails from '../assets/images/dawn-trails.jpg'
-import santoriniSunset from '../assets/images/santorini-sunset.jpg'
-import skylineOverlook from '../assets/images/skyline-overlook.jpg'
+import {
+  fetchAuthorPhotos,
+  mapAuthorPhotoToCard,
+} from '../services/authorPhotoService'
 
-interface Photo {
-  id: string
-  title: string
-  category: string
-  imageUrl: string
-  views: number
-  downloads: number
-  earnings: number
-  status: 'published' | 'pending' | 'draft'
-  uploadedAt: string
-  tags: string[]
+type Row = ReturnType<typeof mapAuthorPhotoToCard>
+
+const loadState = ref<'loading' | 'ok' | 'error'>('loading')
+const loadError = ref('')
+const photos = ref<Row[]>([])
+
+const searchQuery = ref('')
+
+async function load() {
+  loadState.value = 'loading'
+  loadError.value = ''
+  try {
+    const raw = await fetchAuthorPhotos()
+    photos.value = raw.map((p) => mapAuthorPhotoToCard(p))
+    loadState.value = 'ok'
+  } catch {
+    loadState.value = 'error'
+    loadError.value = 'Не удалось загрузить фотографии. Войдите как автор и попробуйте снова.'
+  }
 }
 
-const photos = ref<Photo[]>([
-  {
-    id: '1',
-    title: 'Горное утро',
-    category: 'Природа',
-    imageUrl: alpineLake,
-    views: 1240,
-    downloads: 12,
-    earnings: 3600,
-    status: 'published',
-    uploadedAt: '2024-01-15',
-    tags: ['озеро', 'рассвет'],
-  },
-  {
-    id: '2',
-    title: 'Вид сверху',
-    category: 'Ландшафты',
-    imageUrl: aerialLandscape,
-    views: 890,
-    downloads: 8,
-    earnings: 2400,
-    status: 'published',
-    uploadedAt: '2024-01-14',
-    tags: ['вид сверху', 'геометрия'],
-  },
-  {
-    id: '3',
-    title: 'План на неделю',
-    category: 'Лайфстайл',
-    imageUrl: creativeDesk,
-    views: 0,
-    downloads: 0,
-    earnings: 0,
-    status: 'pending',
-    uploadedAt: '2024-01-16',
-    tags: ['планирование', 'flatlay'],
-  },
-  {
-    id: '4',
-    title: 'Туманная тропа',
-    category: 'Природа',
-    imageUrl: dawnTrails,
-    views: 560,
-    downloads: 5,
-    earnings: 1500,
-    status: 'published',
-    uploadedAt: '2024-01-13',
-    tags: ['лес', 'утро'],
-  },
-  {
-    id: '5',
-    title: 'Сияние Санторини',
-    category: 'Город',
-    imageUrl: santoriniSunset,
-    views: 2100,
-    downloads: 18,
-    earnings: 5400,
-    status: 'published',
-    uploadedAt: '2024-01-12',
-    tags: ['эгейские купола', 'сумерки'],
-  },
-  {
-    id: '6',
-    title: 'Огни большого города',
-    category: 'Город',
-    imageUrl: skylineOverlook,
-    views: 0,
-    downloads: 0,
-    earnings: 0,
-    status: 'draft',
-    uploadedAt: '2024-01-17',
-    tags: ['ночь', 'урбанистика'],
-  },
-])
-
-const filterStatus = ref<'all' | 'published' | 'pending' | 'draft'>('all')
-const searchQuery = ref('')
+onMounted(() => {
+  void load()
+})
 
 const filteredPhotos = computed(() => {
   let result = photos.value
-
-  if (filterStatus.value !== 'all') {
-    result = result.filter((photo) => photo.status === filterStatus.value)
-  }
-
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     result = result.filter(
       (photo) =>
         photo.title.toLowerCase().includes(query) ||
         photo.category.toLowerCase().includes(query) ||
-        photo.tags.some((tag) => tag.toLowerCase().includes(query))
+        (photo.tags || []).some((tag) => tag.toLowerCase().includes(query))
     )
   }
-
   return result
 })
 
-function deletePhoto(id: string) {
-  if (confirm('Вы уверены, что хотите удалить эту фотографию?')) {
-    photos.value = photos.value.filter((photo) => photo.id !== id)
-  }
+function deletePhoto(_id: string) {
+  alert('Удаление через API появится в следующей итерации.')
 }
 </script>
 
 <template>
   <PhotographerLayout>
     <div class="photos-page">
+      <p v-if="loadState === 'error'" class="photos-page__error" role="alert">
+        {{ loadError }}
+      </p>
+
       <div class="photos-page__header">
         <RouterLink to="/photographer/photos/upload" class="btn btn--primary">
           <svg
@@ -152,68 +80,46 @@ function deletePhoto(id: string) {
         </RouterLink>
       </div>
 
-      <!-- Фильтры и поиск -->
-      <div class="photos-page__filters">
-        <div class="search-box">
-          <AdminIcon name="search" :size="20" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="search-input"
-            placeholder="Поиск по названию, категории или тегам..."
+      <template v-if="loadState !== 'error'">
+        <div class="photos-page__filters">
+          <div class="search-box">
+            <AdminIcon name="search" :size="20" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="search-input"
+              placeholder="Поиск по названию, категории или тегам..."
+              :disabled="loadState === 'loading'"
+            />
+          </div>
+        </div>
+
+        <p v-if="loadState === 'loading'" class="photos-page__muted">Загрузка…</p>
+        <div
+          v-else-if="filteredPhotos.length > 0"
+          class="photos-grid"
+        >
+          <PhotoCard
+            v-for="photo in filteredPhotos"
+            :key="photo.id"
+            :photo="photo"
+            :show-actions="true"
+            :show-stats="true"
+            :show-status="true"
+            @edit="() => {}"
+            @delete="deletePhoto"
           />
         </div>
 
-        <div class="filter-tabs">
-          <button
-            :class="['filter-tab', { 'filter-tab--active': filterStatus === 'all' }]"
-            @click="filterStatus = 'all'"
-          >
-            Все
-          </button>
-          <button
-            :class="['filter-tab', { 'filter-tab--active': filterStatus === 'published' }]"
-            @click="filterStatus = 'published'"
-          >
-            Опубликовано
-          </button>
-          <button
-            :class="['filter-tab', { 'filter-tab--active': filterStatus === 'pending' }]"
-            @click="filterStatus = 'pending'"
-          >
-            На модерации
-          </button>
-          <button
-            :class="['filter-tab', { 'filter-tab--active': filterStatus === 'draft' }]"
-            @click="filterStatus = 'draft'"
-          >
-            Черновики
-          </button>
+        <div v-else class="photos-empty">
+          <AdminIcon name="photos" :size="48" class="photos-empty__icon" />
+          <h3>Фотографии не найдены</h3>
+          <p>Измените поиск или загрузите новую фотографию</p>
+          <RouterLink to="/photographer/photos/upload" class="btn btn--primary">
+            Загрузить фото
+          </RouterLink>
         </div>
-      </div>
-
-      <!-- Список фотографий -->
-      <div v-if="filteredPhotos.length > 0" class="photos-grid">
-        <PhotoCard
-          v-for="photo in filteredPhotos"
-          :key="photo.id"
-          :photo="photo"
-          :show-actions="true"
-          :show-stats="true"
-          :show-status="true"
-          @edit="() => {}"
-          @delete="deletePhoto"
-        />
-      </div>
-
-      <div v-else class="photos-empty">
-        <AdminIcon name="photos" :size="48" class="photos-empty__icon" />
-        <h3>Фотографии не найдены</h3>
-        <p>Попробуйте изменить фильтры или загрузите новую фотографию</p>
-        <RouterLink to="/photographer/photos/upload" class="btn btn--primary">
-          Загрузить фото
-        </RouterLink>
-      </div>
+      </template>
     </div>
   </PhotographerLayout>
 </template>
@@ -229,6 +135,20 @@ function deletePhoto(id: string) {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 0.5rem;
+}
+
+.photos-page__error {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-danger, #b91c1c);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.photos-page__muted {
+  margin: 0;
+  color: var(--color-text-muted);
 }
 
 .photos-page__filters {

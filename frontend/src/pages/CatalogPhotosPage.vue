@@ -5,7 +5,8 @@ import PhotoGrid from '../components/PhotoGrid.vue'
 import CatalogSearch from '../components/CatalogSearch.vue'
 import type { Photo } from '../data/photos'
 import { getPhotos, paramsFromQuery } from '../services/photoService'
-import { categories } from '../data/homepage'
+import { fetchCategoryList } from '../services/showcaseService'
+import type { CategoryItem } from '../types/showcase'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,6 +25,14 @@ const selectedOrientation = ref<'landscape' | 'portrait' | 'square' | null>(null
 const favoriteIds = ref<string[]>([])
 const showOnlyFavorites = ref(false)
 const savedFilters = ref<{ category?: string | null; search?: string; orientation?: string | null } | null>(null)
+
+const categories = ref<CategoryItem[]>([])
+
+const categoryHeaderTitle = computed(() => {
+  const slug = selectedCategory.value
+  if (!slug) return null
+  return categories.value.find((c) => c.slug === slug)?.name ?? slug
+})
 
 const loadTriggerRef = ref<HTMLElement | null>(null)
 const observer = ref<IntersectionObserver | null>(null)
@@ -259,7 +268,12 @@ watch(
   { immediate: false }
 )
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    categories.value = await fetchCategoryList()
+  } catch {
+    categories.value = []
+  }
   initFromQuery()
   loadFavorites()
   loadSavedFiltersFlag()
@@ -285,7 +299,7 @@ onUnmounted(() => {
         <div class="catalog-photos-header__top">
           <div>
             <h1 class="catalog-photos-header__title">
-              {{ selectedCategory ? selectedCategory : 'Каталог фотографий' }}
+              {{ categoryHeaderTitle ?? 'Каталог фотографий' }}
             </h1>
             <p v-if="totalPhotos > 0" class="catalog-photos-header__count">
               {{ totalPhotos }} {{ totalPhotos === 1 ? 'фотография' : totalPhotos < 5 ? 'фотографии' : 'фотографий' }}

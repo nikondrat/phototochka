@@ -83,10 +83,10 @@ const activeTabData = computed(() => tabs.find((t) => t.id === activeTab.value))
       <div class="admin-sidebar__footer">
         <div class="admin-sidebar__user">
           <div class="admin-sidebar__user-avatar">
-            {{ currentUser?.name?.charAt(0).toUpperCase() || 'A' }}
+            {{ (currentUser?.displayName || currentUser?.username || '?').charAt(0).toUpperCase() }}
           </div>
           <div class="admin-sidebar__user-info">
-            <span class="admin-sidebar__user-name">{{ currentUser?.name }}</span>
+            <span class="admin-sidebar__user-name">{{ currentUser?.displayName || currentUser?.username }}</span>
             <span class="admin-sidebar__user-email">{{ currentUser?.email }}</span>
           </div>
         </div>

@@ -108,10 +108,10 @@ defineProps<{
     <div class="photographer-sidebar__footer">
       <div class="photographer-sidebar__user">
         <div class="photographer-sidebar__user-avatar">
-          {{ currentUser?.name?.charAt(0).toUpperCase() || "A" }}
+          {{ (currentUser?.displayName || currentUser?.username || "?").charAt(0).toUpperCase() }}
         </div>
         <div class="photographer-sidebar__user-info">
-          <span class="photographer-sidebar__user-name">{{ currentUser?.name }}</span>
+          <span class="photographer-sidebar__user-name">{{ currentUser?.displayName || currentUser?.username }}</span>
           <span class="photographer-sidebar__user-email">{{ currentUser?.email }}</span>
         </div>
       </div>

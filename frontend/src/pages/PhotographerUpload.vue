@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter, RouterLink } from "vue-router";
+import { onMounted, ref } from "vue";
+import { RouterLink, useRouter } from "vue-router";
 import PhotographerLayout from "../components/PhotographerLayout.vue";
+import { uploadAuthorPhoto } from "../services/authorPhotoService";
+import { fetchCategoryList } from "../services/showcaseService";
+import { formatApiFormError } from "../utils/apiErrors";
+import { computeBlurHash } from "../utils/computeBlurHash";
 
 const router = useRouter();
 
 const title = ref("");
-const category = ref("");
+const categorySlug = ref("");
 const tags = ref("");
 const price = ref("");
 const description = ref("");
@@ -14,18 +18,8 @@ const selectedFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 const isUploading = ref(false);
 const error = ref("");
-
-const categories = [
-  "Природа",
-  "Животные",
-  "Люди",
-  "Город",
-  "Еда и напитки",
-  "Технологии",
-  "Абстракции",
-  "Ландшафты",
-  "Лайфстайл",
-];
+const categories = ref<{ id: number; name: string; slug: string }[]>([]);
+const categoriesError = ref("");
 
 function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement;
@@ -45,11 +39,22 @@ function removeFile() {
   previewUrl.value = null;
 }
 
+onMounted(() => {
+  void (async () => {
+    try {
+      categories.value = await fetchCategoryList();
+    } catch {
+      categoriesError.value =
+        "Не удалось загрузить список категорий. Проверьте API и повторите.";
+    }
+  })();
+});
+
 async function handleSubmit(e: Event) {
   e.preventDefault();
   error.value = "";
 
-  if (!title.value || !category.value || !selectedFile.value) {
+  if (!title.value.trim() || !categorySlug.value || !selectedFile.value) {
     error.value = "Заполните все обязательные поля";
     return;
   }
@@ -57,11 +62,26 @@ async function handleSubmit(e: Event) {
   isUploading.value = true;
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    router.push("/photographer/photos");
+    const blurHash = await computeBlurHash(selectedFile.value);
+    const tagList = tags.value
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    await uploadAuthorPhoto({
+      title: title.value.trim(),
+      description: description.value.trim(),
+      categorySlug: categorySlug.value,
+      price: price.value === "" ? 0 : Math.max(0, Number(price.value)),
+      tags: tagList,
+      file: selectedFile.value,
+      blurHash,
+    });
+    await router.push("/photographer/photos");
   } catch (err) {
-    error.value = "Ошибка при загрузке фотографии. Попробуйте позже.";
+    error.value = formatApiFormError(
+      err,
+      "Ошибка при загрузке фотографии. Попробуйте позже."
+    );
   } finally {
     isUploading.value = false;
   }
@@ -77,6 +97,9 @@ async function handleSubmit(e: Event) {
         </RouterLink>
       </div>
 
+      <p v-if="categoriesError" class="upload-categories-warn" role="status">
+        {{ categoriesError }}
+      </p>
       <form @submit="handleSubmit" class="upload-form">
         <div v-if="error" class="upload-error" role="alert">
           <svg
@@ -195,13 +218,17 @@ async function handleSubmit(e: Event) {
               </label>
               <select
                 id="category"
-                v-model="category"
+                v-model="categorySlug"
                 class="form-input"
                 required
               >
                 <option value="">Выберите категорию</option>
-                <option v-for="cat in categories" :key="cat" :value="cat">
-                  {{ cat }}
+                <option
+                  v-for="c in categories"
+                  :key="c.slug"
+                  :value="c.slug"
+                >
+                  {{ c.name }}
                 </option>
               </select>
             </div>
@@ -279,6 +306,15 @@ async function handleSubmit(e: Event) {
   display: flex;
   justify-content: flex-start;
   margin-bottom: 0.5rem;
+}
+
+.upload-categories-warn {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-danger);
+  font-size: 0.9rem;
 }
 
 .upload-form {

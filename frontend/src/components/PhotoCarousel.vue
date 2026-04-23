@@ -1,36 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import type { PhotoCard } from '../data/homepage'
+import type { ShowcasePhotoCard } from '../types/showcase'
 
 interface Props {
   title: string
   eyebrow?: string
   description?: string
-  photos: PhotoCard[]
+  photos: ShowcasePhotoCard[]
   sectionId?: string
 }
 
 const props = defineProps<Props>()
 
 const scroller = ref<HTMLDivElement | null>(null)
-
-// Маппинг ID из homepage на ID из photos.ts
-function getPhotoId(homepageId: string): string {
-  const mapping: Record<string, string> = {
-    'popular-1': 'photo-1',
-    'popular-2': 'photo-2',
-    'popular-3': 'photo-3',
-    'popular-4': 'photo-4',
-    'new-1': 'photo-5',
-    'new-2': 'photo-6',
-    'new-3': 'photo-7',
-    'new-4': 'photo-8',
-    'new-5': 'photo-9',
-    'new-6': 'photo-10',
-  }
-  return mapping[homepageId] || homepageId
-}
 
 function scroll(direction: 'prev' | 'next') {
   const container = scroller.value
@@ -65,8 +48,8 @@ function scroll(direction: 'prev' | 'next') {
         <div ref="scroller" class="carousel__scroller" role="list">
           <RouterLink
             v-for="photo in props.photos"
-            :key="photo.id"
-            :to="`/photo/${getPhotoId(photo.id)}`"
+            :key="photo.publicId"
+            :to="`/photo/${photo.publicId}`"
             data-card
             class="carousel__card"
             role="listitem"

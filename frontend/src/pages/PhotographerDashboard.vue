@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { RouterLink } from "vue-router";
 import PhotographerLayout from "../components/PhotographerLayout.vue";
 import AdminIcon from "../components/admin/AdminIcon.vue";
 import PhotoCard from "../components/PhotoCard.vue";
-import alpineLake from "../assets/images/alpine-lake.jpg";
-import aerialLandscape from "../assets/images/aerial-landscape.jpg";
-import creativeDesk from "../assets/images/creative-desk.jpg";
-import dawnTrails from "../assets/images/dawn-trails.jpg";
+import {
+  fetchAuthorPhotos,
+  mapAuthorPhotoToCard,
+  type AuthorPhotoApi,
+} from "../services/authorPhotoService";
 
 interface StatCard {
   id: string;
@@ -19,92 +20,88 @@ interface StatCard {
   bgGradient: string;
 }
 
+const loadState = ref<"loading" | "ok" | "error">("loading");
+const myPhotos = ref<AuthorPhotoApi[]>([]);
+const loadError = ref("");
 
-const stats = ref<StatCard[]>([
-  {
-    id: "total-photos",
-    title: "Всего фотографий",
-    value: 128,
-    change: "+12%",
-    icon: "photos",
-    color: "#10B981",
-    bgGradient:
-      "linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))",
-  },
-  {
-    id: "total-views",
-    title: "Просмотры",
-    value: "24.5K",
-    change: "+18%",
-    icon: "view",
-    color: "#8B5CF6",
-    bgGradient:
-      "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
-  },
-  {
-    id: "total-downloads",
-    title: "Скачивания",
-    value: 342,
-    change: "+23%",
-    icon: "view",
-    color: "#3B82F6",
-    bgGradient:
-      "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))",
-  },
-  {
-    id: "total-earnings",
-    title: "Заработано",
-    value: "₽45,200",
-    change: "+15%",
-    icon: "money",
-    color: "#F59E0B",
-    bgGradient:
-      "linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))",
-  },
-]);
+const dashNone = "—";
 
-const recentPhotos = ref([
-  {
-    id: "1",
-    title: "Горное утро",
-    category: "Природа",
-    imageUrl: alpineLake,
-    views: 1240,
-    downloads: 12,
-    status: "published" as const,
-    uploadedAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    title: "Вид сверху",
-    category: "Ландшафты",
-    imageUrl: aerialLandscape,
-    views: 890,
-    downloads: 8,
-    status: "published" as const,
-    uploadedAt: "2024-01-14",
-  },
-  {
-    id: "3",
-    title: "План на неделю",
-    category: "Лайфстайл",
-    imageUrl: creativeDesk,
-    views: 0,
-    downloads: 0,
-    status: "pending" as const,
-    uploadedAt: "2024-01-16",
-  },
-  {
-    id: "4",
-    title: "Туманная тропа",
-    category: "Природа",
-    imageUrl: dawnTrails,
-    views: 560,
-    downloads: 5,
-    status: "published" as const,
-    uploadedAt: "2024-01-13",
-  },
-]);
+async function load() {
+  loadState.value = "loading";
+  loadError.value = "";
+  try {
+    myPhotos.value = await fetchAuthorPhotos();
+    loadState.value = "ok";
+  } catch {
+    loadState.value = "error";
+    loadError.value = "Не удалось загрузить данные. Войдите в аккаунт автора и попробуйте снова.";
+  }
+}
+
+onMounted(() => {
+  void load();
+});
+
+const stats = computed<StatCard[]>(() => {
+  const list = myPhotos.value;
+  const total = list.length;
+  const views = list.reduce((s, p) => s + (p.views || 0), 0);
+  const dls = list.reduce((s, p) => s + (p.downloads || 0), 0);
+  const portfolio = list.reduce((s, p) => s + (p.price || 0), 0);
+  const fmtRub = (n: number) =>
+    new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
+      maximumFractionDigits: 0,
+    }).format(n);
+
+  return [
+    {
+      id: "total-photos",
+      title: "Всего фотографий",
+      value: total,
+      change: dashNone,
+      icon: "photos",
+      color: "#10B981",
+      bgGradient:
+        "linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))",
+    },
+    {
+      id: "total-views",
+      title: "Просмотры",
+      value: views,
+      change: dashNone,
+      icon: "view",
+      color: "#8B5CF6",
+      bgGradient:
+        "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
+    },
+    {
+      id: "total-downloads",
+      title: "Скачивания",
+      value: dls,
+      change: dashNone,
+      icon: "view",
+      color: "#3B82F6",
+      bgGradient:
+        "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))",
+    },
+    {
+      id: "portfolio-sum",
+      title: "Сумма цен (портфель)",
+      value: fmtRub(portfolio),
+      change: dashNone,
+      icon: "money",
+      color: "#F59E0B",
+      bgGradient:
+        "linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))",
+    },
+  ];
+});
+
+const recentPhotos = computed(() =>
+  myPhotos.value.slice(0, 4).map(mapAuthorPhotoToCard)
+);
 
 </script>
 
@@ -112,6 +109,10 @@ const recentPhotos = ref([
   <PhotographerLayout>
     <div class="dashboard">
       <!-- Header with CTA -->
+      <p v-if="loadState === 'error'" class="dashboard__error" role="alert">
+        {{ loadError }}
+      </p>
+
       <div class="dashboard__header">
         <RouterLink to="/photographer/photos/upload" class="btn btn--primary">
           <svg
@@ -199,7 +200,8 @@ const recentPhotos = ref([
             Все фотографии →
           </RouterLink>
         </div>
-        <div class="recent-photos">
+        <p v-if="loadState === 'loading'" class="dashboard__muted">Загрузка…</p>
+        <div v-else-if="recentPhotos.length" class="recent-photos">
           <PhotoCard
             v-for="photo in recentPhotos"
             :key="photo.id"
@@ -209,6 +211,9 @@ const recentPhotos = ref([
             variant="compact"
           />
         </div>
+        <p v-else class="dashboard__muted">
+          Пока нет фотографий в портфеле — загрузите работы или дождитесь сидирования демо.
+        </p>
       </div>
     </div>
   </PhotographerLayout>
@@ -219,6 +224,21 @@ const recentPhotos = ref([
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+}
+
+.dashboard__error {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-danger, #b91c1c);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.dashboard__muted {
+  margin: 0;
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.95rem;
 }
 
 .dashboard__header {

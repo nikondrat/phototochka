@@ -1,4 +1,8 @@
 const getBaseUrl = () => {
+  const raw = import.meta.env.VITE_API_BASE_PATH
+  if (typeof raw === 'string' && raw.trim() !== '') {
+    return raw.replace(/\/+$/, '')
+  }
   return '/api'
 }
 
@@ -83,10 +87,19 @@ export async function apiFetch<T = any>(
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
+    const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>
+    const detail = errorData.detail
+    const msgFromDetail =
+      typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail) && detail[0]
+          ? String(detail[0])
+          : typeof errorData.message === 'string'
+            ? errorData.message
+            : 'Произошла ошибка при запросе к API'
     throw {
       status: response.status,
-      message: errorData.message || 'Произошла ошибка при запросе к API',
+      message: msgFromDetail,
       data: errorData
     }
   }

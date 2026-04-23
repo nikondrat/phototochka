@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { popularPhotos, newPhotos, type PhotoCard } from "../../data/homepage";
+import { popularPhotos, newPhotos } from "../../data/adminDemo";
+import type { ShowcasePhotoCard } from "../../types/showcase";
 import AdminIcon from "./AdminIcon.vue";
 
-const allPhotos = ref<PhotoCard[]>([...popularPhotos, ...newPhotos]);
+const allPhotos = ref<ShowcasePhotoCard[]>([...popularPhotos, ...newPhotos]);
 const searchQuery = ref("");
 const selectedCategory = ref<string>("all");
 const viewMode = ref<"grid" | "list">("grid");
@@ -37,22 +38,26 @@ const categories = computed(() => {
 
 function deletePhoto(id: string) {
   if (confirm("Удалить эту фотографию?")) {
-    allPhotos.value = allPhotos.value.filter((p) => p.id !== id);
+    allPhotos.value = allPhotos.value.filter((p) => photoKey(p) !== id);
   }
 }
 
 const isEditing = ref<string | null>(null);
-const editingPhoto = ref<PhotoCard | null>(null);
+const editingPhoto = ref<ShowcasePhotoCard | null>(null);
 
-function startEdit(photo: PhotoCard) {
-  isEditing.value = photo.id;
+function photoKey(photo: ShowcasePhotoCard) {
+  return photo.id ?? photo.publicId;
+}
+
+function startEdit(photo: ShowcasePhotoCard) {
+  isEditing.value = photoKey(photo);
   editingPhoto.value = { ...photo };
 }
 
 function saveEdit() {
   if (!editingPhoto.value || !isEditing.value) return;
 
-  const index = allPhotos.value.findIndex((p) => p.id === isEditing.value);
+  const index = allPhotos.value.findIndex((p) => photoKey(p) === isEditing.value);
   if (index !== -1) {
     allPhotos.value[index] = { ...editingPhoto.value };
   }
@@ -210,7 +215,7 @@ function cancelEdit() {
     >
       <div
         v-for="photo in filteredPhotos"
-        :key="photo.id"
+        :key="photoKey(photo)"
         :class="['photo-card', { 'photo-card--list': viewMode === 'list' }]"
       >
         <div class="photo-card__image">
@@ -225,7 +230,7 @@ function cancelEdit() {
             </button>
             <button
               class="photo-card__action-btn photo-card__action-btn--danger"
-              @click="deletePhoto(photo.id)"
+              @click="deletePhoto(photoKey(photo))"
               aria-label="Удалить"
             >
               <AdminIcon name="delete" :size="18" />
@@ -234,7 +239,7 @@ function cancelEdit() {
         </div>
         <div class="photo-card__body">
           <div
-            v-if="isEditing === photo.id && editingPhoto"
+            v-if="isEditing === photoKey(photo) && editingPhoto"
             class="photo-card__edit"
           >
             <input

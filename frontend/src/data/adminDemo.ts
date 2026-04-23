@@ -1,3 +1,6 @@
+/**
+ * Статичные демо-данные для экранов админки (не прод-путь витрины).
+ */
 import alpineLake from '../assets/images/alpine-lake.jpg'
 import aerialLandscape from '../assets/images/aerial-landscape.jpg'
 import creativeDesk from '../assets/images/creative-desk.jpg'
@@ -10,35 +13,12 @@ import streetStyle from '../assets/images/street-style.jpg'
 import techInstallation from '../assets/images/tech-installation.jpg'
 import valleyOverlook from '../assets/images/valley-overlook.jpg'
 import wildlifeStallion from '../assets/images/wildlife-stallion.jpg'
+import type { AuthorCard, ShowcasePhotoCard } from '../types/showcase'
 
-export interface PhotoCard {
-  id: string
-  title: string
-  category: string
-  imageUrl: string
-  orientation: 'landscape' | 'portrait'
-  tags?: string[]
-  price?: string
-}
-
-export interface AuthorCard {
-  id: string
-  name: string
-  specialty: string
-  avatarUrl: string
-  photosCount: number
-  rating: number
-}
-
-export interface BenefitItem {
-  id: string
-  title: string
-  description: string
-}
-
-export const popularPhotos: PhotoCard[] = [
+export const popularPhotos: ShowcasePhotoCard[] = [
   {
     id: 'popular-1',
+    publicId: 'popular-1',
     title: 'Горное утро',
     category: 'Природа',
     orientation: 'landscape',
@@ -47,6 +27,7 @@ export const popularPhotos: PhotoCard[] = [
   },
   {
     id: 'popular-2',
+    publicId: 'popular-2',
     title: 'Вершины над облаками',
     category: 'Путешествия',
     orientation: 'portrait',
@@ -55,6 +36,7 @@ export const popularPhotos: PhotoCard[] = [
   },
   {
     id: 'popular-3',
+    publicId: 'popular-3',
     title: 'Террасы сверху',
     category: 'Ландшафты',
     orientation: 'landscape',
@@ -63,6 +45,7 @@ export const popularPhotos: PhotoCard[] = [
   },
   {
     id: 'popular-4',
+    publicId: 'popular-4',
     title: 'Сияние Санторини',
     category: 'Город',
     orientation: 'portrait',
@@ -71,9 +54,10 @@ export const popularPhotos: PhotoCard[] = [
   },
 ]
 
-export const newPhotos: PhotoCard[] = [
+export const newPhotos: ShowcasePhotoCard[] = [
   {
     id: 'new-1',
+    publicId: 'new-1',
     title: 'Световые арки',
     category: 'Технологии',
     orientation: 'portrait',
@@ -82,6 +66,7 @@ export const newPhotos: PhotoCard[] = [
   },
   {
     id: 'new-2',
+    publicId: 'new-2',
     title: 'План на неделю',
     category: 'Лайфстайл',
     orientation: 'portrait',
@@ -90,6 +75,7 @@ export const newPhotos: PhotoCard[] = [
   },
   {
     id: 'new-3',
+    publicId: 'new-3',
     title: 'Галоп свободы',
     category: 'Животные',
     orientation: 'portrait',
@@ -98,6 +84,7 @@ export const newPhotos: PhotoCard[] = [
   },
   {
     id: 'new-4',
+    publicId: 'new-4',
     title: 'Командный брифинг',
     category: 'Люди',
     orientation: 'portrait',
@@ -106,6 +93,7 @@ export const newPhotos: PhotoCard[] = [
   },
   {
     id: 'new-5',
+    publicId: 'new-5',
     title: 'Туманная тропа',
     category: 'Природа',
     orientation: 'portrait',
@@ -114,6 +102,7 @@ export const newPhotos: PhotoCard[] = [
   },
   {
     id: 'new-6',
+    publicId: 'new-6',
     title: 'Огни большого города',
     category: 'Город',
     orientation: 'portrait',
@@ -122,7 +111,7 @@ export const newPhotos: PhotoCard[] = [
   },
 ]
 
-export const categories = [
+export const adminCategoryNames = [
   'Природа',
   'Животные',
   'Люди',
@@ -156,26 +145,5 @@ export const authors: AuthorCard[] = [
     avatarUrl: strategyWorkshop,
     photosCount: 74,
     rating: 4.8,
-  },
-]
-
-export const benefits: BenefitItem[] = [
-  {
-    id: 'benefit-1',
-    title: 'Прозрачные лицензии',
-    description:
-      'Пакеты прав с подробными пояснениями: от использования в соцсетях до масштабных рекламных кампаний.',
-  },
-  {
-    id: 'benefit-2',
-    title: 'Сильная аналитика',
-    description:
-      'Отслеживайте просмотры, добавления в коллекции и конверсии по каждому кадру — принимайте решения на основе данных.',
-  },
-  {
-    id: 'benefit-3',
-    title: 'Управление коллекциями',
-    description:
-      'Личные подборки, доступ по ссылке и аналитика продаж помогают авторам быстрее продвигать работы.',
   },
 ]

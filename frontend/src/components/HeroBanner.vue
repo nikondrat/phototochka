@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { PhotoCard } from '../data/homepage'
+import type { ShowcasePhotoCard } from '../types/showcase'
 
 interface Props {
-  photos: PhotoCard[]
+  photos: ShowcasePhotoCard[]
 }
 
 const props = defineProps<Props>()
@@ -32,7 +32,7 @@ const props = defineProps<Props>()
         <div class="hero__gallery" aria-label="Популярные фотографии">
           <div
             v-for="(photo, index) in props.photos.slice(0, 4)"
-            :key="photo.id"
+            :key="photo.publicId"
             class="hero__card"
             :class="{
               'hero__card--large-top-left': index === 0,

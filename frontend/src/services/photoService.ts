@@ -58,7 +58,9 @@ export async function getSimilarPhotos(
   // Пока бэкенд не имеет отдельного эндпоинта для похожих, 
   // используем фильтрацию по категории
   const data = await getPhotos({ category, limit })
-  return data.photos.filter(p => p.publicId !== publicId).slice(0, limit)
+  return data.photos
+    .filter((p) => (p.publicId ?? p.id) !== publicId)
+    .slice(0, limit)
 }
 
 // Утилиты для параметров остаются прежними

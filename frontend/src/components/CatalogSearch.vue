@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { CategoryItem } from '../types/showcase'
 
 interface Props {
-  categories: string[]
+  categories: CategoryItem[]
   modelValue?: string
 }
 
@@ -13,7 +14,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   'search': [query: string]
-  'category-select': [category: string]
+  'category-select': [categorySlug: string]
   'orientation-select': [orientation: 'landscape' | 'portrait' | 'square']
 }>()
 
@@ -25,8 +26,8 @@ function handleSearch() {
   emit('search', searchQuery.value)
 }
 
-function handleCategoryClick(category: string) {
-  emit('category-select', category)
+function handleCategoryClick(category: CategoryItem) {
+  emit('category-select', category.slug)
 }
 
 function handleOrientationClick(orientation: 'landscape' | 'portrait' | 'square') {
@@ -85,12 +86,12 @@ function handleOrientationClick(orientation: 'landscape' | 'portrait' | 'square'
           <div class="catalog-search__filter-chips">
             <button
               v-for="category in categories"
-              :key="category"
+              :key="category.slug"
               type="button"
               class="catalog-search__chip"
               @click="handleCategoryClick(category)"
             >
-              {{ category }}
+              {{ category.name }}
             </button>
           </div>
         </div>

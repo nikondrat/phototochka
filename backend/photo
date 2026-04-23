@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Запуск из backend/: делегирует в корневой ./photo
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ ! -x "$REPO_ROOT/photo" ] && [ ! -f "$REPO_ROOT/photo" ]; then
+  echo "Ожидаю скрипт $REPO_ROOT/photo" >&2
+  exit 1
+fi
+cd "$REPO_ROOT"
+exec bash ./photo "$@"

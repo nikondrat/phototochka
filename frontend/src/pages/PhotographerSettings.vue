@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import PhotographerLayout from "../components/PhotographerLayout.vue";
-import creativePortrait from "../assets/images/creative-portrait-1.jpg";
+import { auth } from "../utils/auth";
+import { apiFetch } from "../api/http";
+import { formatApiFormError } from "../utils/apiErrors";
 
-const name = ref("Марина Колосова");
-const email = ref("marina@example.com");
-const specialty = ref("Портреты и lifestyle");
-const bio = ref(
-  "Профессиональный фотограф с 10-летним опытом. Специализируюсь на портретной и lifestyle фотографии."
-);
-const website = ref("https://marinakolosova.com");
-const socialInstagram = ref("@marinakolosova");
-const socialVk = ref("marinakolosova");
-const avatarUrl = ref(creativePortrait);
+const name = ref("");
+const email = ref("");
+const specialty = ref("");
+const bio = ref("");
+const website = ref("");
+const socialInstagram = ref("");
+const socialVk = ref("");
+const avatarPreview = ref<string | null>(null);
 const isSaving = ref(false);
 const saveSuccess = ref(false);
+const loadError = ref("");
+const saveError = ref("");
 
 const notifications = ref({
   newDownload: true,
@@ -29,13 +31,31 @@ const privacy = ref({
   allowMessages: true,
 });
 
+const displayAvatar = computed(() => {
+  if (avatarPreview.value) return avatarPreview.value;
+  const u = auth.getCurrentUser();
+  const a = u?.avatar;
+  return a && String(a).length > 0 ? String(a) : null;
+});
+
+onMounted(async () => {
+  loadError.value = "";
+  try {
+    const u = await auth.fetchMe();
+    name.value = u.displayName || "";
+    email.value = u.email || "";
+  } catch {
+    loadError.value = "Не удалось загрузить профиль. Войдите в аккаунт.";
+  }
+});
+
 function handleAvatarChange(event: Event) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      avatarUrl.value = e.target?.result as string;
+      avatarPreview.value = e.target?.result as string;
     };
     reader.readAsDataURL(file);
   }
@@ -45,15 +65,24 @@ async function handleSave(e: Event) {
   e.preventDefault();
   isSaving.value = true;
   saveSuccess.value = false;
+  saveError.value = "";
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
+    await apiFetch("/auth/me/", {
+      method: "PATCH",
+      body: JSON.stringify({
+        displayName: name.value.trim(),
+        email: email.value.trim(),
+      }),
+    });
+    await auth.fetchMe();
+    avatarPreview.value = null;
     saveSuccess.value = true;
     setTimeout(() => {
       saveSuccess.value = false;
     }, 3000);
   } catch (err) {
+    saveError.value = formatApiFormError(err, "Не удалось сохранить профиль");
   } finally {
     isSaving.value = false;
   }
@@ -63,6 +92,8 @@ async function handleSave(e: Event) {
 <template>
   <PhotographerLayout>
     <div class="settings-page">
+      <p v-if="loadError" class="settings-page__alert" role="alert">{{ loadError }}</p>
+      <p v-if="saveError" class="settings-page__alert" role="alert">{{ saveError }}</p>
       <form @submit="handleSave" class="settings-form">
         <!-- Профиль -->
         <section class="settings-section">
@@ -70,7 +101,14 @@ async function handleSave(e: Event) {
           <div class="settings-section__content">
             <div class="avatar-upload">
               <div class="avatar-upload__preview">
-                <img :src="avatarUrl" alt="Avatar" />
+                <img
+                  v-if="displayAvatar"
+                  :src="displayAvatar"
+                  alt=""
+                />
+                <span v-else class="avatar-upload__placeholder" aria-hidden="true">{{
+                  (name || email || "?").charAt(0).toUpperCase()
+                }}</span>
               </div>
               <div class="avatar-upload__controls">
                 <label for="avatar-input" class="btn btn--ghost">
@@ -358,6 +396,27 @@ async function handleSave(e: Event) {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+.settings-page__alert {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-danger, #b91c1c);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.avatar-upload__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-accent), #0f172a);
 }
 
 .settings-page__title {

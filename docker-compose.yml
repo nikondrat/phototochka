@@ -17,9 +17,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-}
     volumes:
       - ./backend:/app
       - phototochka_media:/app/media
+      - ./frontend/src/assets/images:/app/demo_images:ro
     environment:
       - DJANGO_DEBUG=1
       - DJANGO_SECRET_KEY=dev-secret-key-123

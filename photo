@@ -17,16 +17,18 @@ error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 
 usage() {
   echo "Использование: ./photo <команда>"
-  echo "  up           Запуск Docker-контейнеров"
+  echo "  start        Один шаг: Docker (БД+API), миграции, сид, Vite :5173 [переменные: SKIP_SEED=1, NO_BUILD=1]"
+  echo "  up           Только Docker-контейнеры (без Vite)"
   echo "  down         Остановка Docker-контейнеров"
-  echo "  dev:back     Запуск бэкенда локально (python)"
-  echo "  dev:front    Запуск фронтенда локально (npm)"
-  echo "  build        Полная сборка проекта"
-  echo "  test:back    Запуск тестов бэкенда (pytest)"
-  echo "  test:full    Полный цикл тестов (back + front lint + E2E)"
-  echo "  seed         Наполнение базы демо-данными"
-  echo "  deploy       Деплой на VDS (через rsync + ssh)"
-  echo "  help         Показать это сообщение"
+  echo "  migrate      Применить миграции (Docker, иначе локальный backend/.venv + SQLite)"
+  echo "  dev:back     Бэкенд локально: venv, migrate, runserver :8000"
+  echo "  dev:front    Фронт: npm run dev :5173"
+  echo "  build        Сборка фронта + collectstatic"
+  echo "  test:back    Pytest"
+  echo "  test:full    back + lint + e2e"
+  echo "  seed         Демо-данные (в активный стек: Docker или локальный venv)"
+  echo "  deploy       Деплой на VDS"
+  echo "  help         Справка"
 }
 
 check_env() {
@@ -39,7 +41,64 @@ check_env() {
   fi
 }
 
+# Контейнер backend из compose сейчас отвечает?
+backend_container_ready() {
+  docker compose exec -T backend true 2>/dev/null
+}
+
+ensure_local_venv() {
+  local py="python3"
+  if [ ! -d backend/.venv ]; then
+    info "Создаю backend/.venv и ставлю зависимости (первый раз)..."
+    (cd "$ROOT/backend" && "$py" -m venv .venv && .venv/bin/pip install -U pip -q && .venv/bin/pip install -r requirements.txt)
+  fi
+  # shellcheck source=/dev/null
+  source "$ROOT/backend/.venv/bin/activate"
+}
+
 case "${1:-}" in
+  start)
+    export DOCKER_BUILDKIT=1
+    export COMPOSE_DOCKER_CLI_BUILD=1
+    check_env
+    command -v docker >/dev/null 2>&1 || error "Нужен Docker. Альтернатива: ./photo dev:back в одном терминале и ./photo dev:front в другом."
+    if ! docker info >/dev/null 2>&1; then
+      error "Docker не запущен (запустите Docker Desktop / daemon)."
+    fi
+    if [ "${NO_BUILD:-0}" = "1" ]; then
+      info "Запуск контейнеров без --build (NO_BUILD=1)..."
+      docker compose up -d
+    else
+      info "Сборка образа и запуск (БД + Django) — при смене requirements нужен rebuild."
+      docker compose up -d --build
+    fi
+    info "Ожидаю API (до 60 с)..."
+    ok=0
+    for i in $(seq 1 60); do
+      if curl -sf "http://127.0.0.1:8000/api/categories/" >/dev/null; then
+        ok=1
+        break
+      fi
+      sleep 1
+    done
+    if [ "$ok" != "1" ]; then
+      error "API на :8000 не отвечает. Смотрите: docker compose logs -f backend"
+    fi
+    info "Принудительно применяю миграции в контейнере..."
+    docker compose exec -T backend python manage.py migrate --noinput
+    if [ "${SKIP_SEED:-0}" != "1" ]; then
+      info "Сид демо-данных (отключить: SKIP_SEED=1 ./photo start)..."
+      docker compose exec -T backend python manage.py seed_demo || warn "Сид: часть данных уже в базе — это нормально"
+    else
+      info "Сид пропущен (SKIP_SEED=1)."
+    fi
+    info "Создаю frontend/node_modules и запускаю Vite (останов: Ctrl+C; контейнеры: ./photo down)..."
+    (cd "$ROOT/frontend" && npm install)
+    info "— Откройте http://localhost:5173 (прокси /api и /media на :8000)"
+    info "— Админка Django: http://127.0.0.1:8000/admin/"
+    cd "$ROOT/frontend" && exec npm run dev
+    ;;
+
   up)
     check_env
     docker compose up -d
@@ -58,49 +117,70 @@ case "${1:-}" in
     docker compose down
     ;;
 
+  migrate)
+    check_env
+    if backend_container_ready; then
+      info "Миграции (контейнер backend)..."
+      docker compose exec -T backend python manage.py migrate --noinput
+    else
+      ensure_local_venv
+      (cd "$ROOT/backend" && python manage.py migrate --noinput)
+    fi
+    info "Готово."
+    ;;
+
   dev:back)
     check_env
-    cd backend
-    source .venv/bin/activate || error "Виртуальное окружение не найдено. Запустите сначала установку зависимостей."
-    python manage.py migrate
+    ensure_local_venv
+    cd "$ROOT/backend"
+    python manage.py migrate --noinput
     python manage.py runserver 8000
     ;;
 
   dev:front)
-    cd frontend
+    cd "$ROOT/frontend"
     npm install
     npm run dev
     ;;
 
   build)
     info "Сборка фронтенда..."
-    (cd frontend && npm install && npm run build)
+    (cd "$ROOT/frontend" && npm install && npm run build)
     info "Сборка бэкенда (collectstatic)..."
-    (cd backend && source .venv/bin/activate && python manage.py collectstatic --noinput)
+    ensure_local_venv
+    (cd "$ROOT/backend" && python manage.py collectstatic --noinput)
     info "Сборка завершена!"
     ;;
 
   test:back)
-    cd backend && source .venv/bin/activate && pytest
+    ensure_local_venv
+    (cd "$ROOT/backend" && pytest)
     ;;
 
   test:full)
     info "Запуск тестов бэкенда..."
-    (cd backend && source .venv/bin/activate && pytest) || error "Тесты бэкенда провалены"
-    
+    (ensure_local_venv; cd "$ROOT/backend" && pytest) || error "Тесты бэкенда провалены"
+
     info "Проверка типов фронтенда..."
-    (cd frontend && npm run lint) || warn "Проверка типов фронтенда нашла ошибки"
-    
+    (cd "$ROOT/frontend" && npm run lint) || warn "Проверка типов фронтенда нашла ошибки"
+
     info "Запуск E2E тестов (Playwright)..."
-    (cd frontend && npx playwright test) || error "E2E тесты провалены"
+    (cd "$ROOT/frontend" && npx playwright test) || error "E2E тесты провалены"
     ;;
 
   seed)
-    cd backend && source .venv/bin/activate && python manage.py seed_demo
+    check_env
+    if backend_container_ready; then
+      info "Сид в контейнере backend (Postgres)..."
+      docker compose exec -T backend python manage.py seed_demo
+    else
+      ensure_local_venv
+      (cd "$ROOT/backend" && python manage.py seed_demo)
+    fi
     ;;
 
   deploy)
-    bash scripts/internal/deploy.sh
+    bash "$ROOT/scripts/internal/deploy.sh"
     ;;
 
   help|--help|-h|"")

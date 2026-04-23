@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import type { CategoryItem } from '../types/showcase'
 
 interface Props {
-  categories: string[]
+  categories: CategoryItem[]
 }
 
 const props = defineProps<Props>()
@@ -23,11 +24,11 @@ const props = defineProps<Props>()
       <div class="categories__grid">
         <RouterLink
           v-for="category in props.categories"
-          :key="category"
+          :key="category.slug"
           class="categories__card"
-          :to="{ path: '/catalog/photos', query: { category } }"
+          :to="{ path: '/catalog/photos', query: { category: category.slug } }"
         >
-          <span class="categories__label">{{ category }}</span>
+          <span class="categories__label">{{ category.name }}</span>
           <span class="categories__arrow" aria-hidden="true">→</span>
         </RouterLink>
       </div>

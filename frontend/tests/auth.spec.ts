@@ -9,14 +9,14 @@ test.describe('Authentication Flow', () => {
     await page.click('text=Войти');
     await expect(page).toHaveURL('/login');
 
-    // 3. Заполнить форму (используем данные из seed_demo)
-    await page.fill('input[type="email"]', 'admin@example.com');
+    // 3. Заполнить форму (seed_demo: username=admin, см. backend)
+    await page.fill('#login-identifier', 'admin');
+    // Согласовано с SEED_ADMIN_PASSWORD в backend/.env (см. seed_demo)
     await page.fill('input[type="password"]', 'admin-password-change-me');
     await page.click('button[type="submit"]');
 
-    // 4. Проверить редирект на главную или в профиль
-    // После логина в HeaderNav должен появиться никнейм
-    await expect(page.locator('.header__user')).toBeVisible();
+    // 4. Нужен запущенный Django API на :8000 (прокси Vite). Долгий таймаут — сеть/холодный старт.
+    await expect(page.locator('.header__user')).toBeVisible({ timeout: 20000 });
     
     // 5. Перейти в профиль
     await page.click('.header__user');

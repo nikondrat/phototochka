@@ -2,6 +2,12 @@ import type { RouteLocationNormalized } from 'vue-router'
 import defaultOgImage from '../assets/images/strategy-workshop.jpg'
 import { getYandexMetrikaId, yandexMetrikaHit } from '../utils/analytics'
 
+const defaultOgFromEnv = import.meta.env.VITE_DEFAULT_OG_IMAGE
+const resolvedDefaultOg: string | undefined =
+  typeof defaultOgFromEnv === 'string' && defaultOgFromEnv.trim() !== ''
+    ? defaultOgFromEnv.trim()
+    : undefined
+
 type SeoMeta = {
   title: string
   description: string
@@ -28,7 +34,7 @@ const DEFAULT_SEO: SeoMeta = {
     'каталог фотографий',
     'подписка на контент',
   ],
-  ogImage: defaultOgImage,
+  ogImage: resolvedDefaultOg ?? defaultOgImage,
 }
 
 const SEO_BY_ROUTE: Record<string, Partial<SeoMeta>> = {
@@ -197,12 +203,15 @@ export const applySeo = (to: RouteLocationNormalized) => {
   upsertPropertyMeta('og:description', seo.description)
   upsertPropertyMeta('og:type', 'website')
   upsertPropertyMeta('og:url', canonical)
-  upsertPropertyMeta('og:image', seo.ogImage ?? DEFAULT_SEO.ogImage)
+  upsertPropertyMeta('og:image', seo.ogImage ?? (resolvedDefaultOg ?? defaultOgImage))
 
   upsertPropertyMeta('twitter:card', 'summary_large_image')
   upsertPropertyMeta('twitter:title', seo.title)
   upsertPropertyMeta('twitter:description', seo.description)
-  upsertPropertyMeta('twitter:image', seo.ogImage ?? DEFAULT_SEO.ogImage)
+  upsertPropertyMeta(
+    'twitter:image',
+    seo.ogImage ?? (resolvedDefaultOg ?? defaultOgImage)
+  )
 
   ensureCanonical(canonical)
 

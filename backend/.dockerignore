@@ -1,0 +1,22 @@
+# Не копировать в Docker build context (уменьшает трафик и риск утечек)
+.venv
+venv
+__pycache__
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.pytest_cache
+.coverage
+htmlcov
+.mypy_cache
+.env
+.env.*
+*.sqlite3
+db.sqlite3
+media
+staticfiles
+*.log
+.git
+*.md
+Dockerfile
+.dockerignore

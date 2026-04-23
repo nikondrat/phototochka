@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AuthorCard } from '../data/homepage'
+import type { AuthorCard } from '../types/showcase'
 
 interface Props {
   authors: AuthorCard[]
@@ -23,7 +23,16 @@ const props = defineProps<Props>()
       <div class="authors__grid" role="list">
         <article v-for="author in props.authors" :key="author.id" class="authors__card" role="listitem">
           <div class="authors__avatar">
-            <img :src="author.avatarUrl" :alt="author.name" loading="lazy" decoding="async" />
+            <img
+              v-if="author.avatarUrl"
+              :src="author.avatarUrl"
+              :alt="author.name"
+              loading="lazy"
+              decoding="async"
+            />
+            <span v-else class="authors__avatar-fallback" aria-hidden="true">{{
+              author.name.charAt(0).toUpperCase()
+            }}</span>
           </div>
           <div class="authors__info">
             <h3 class="authors__name">{{ author.name }}</h3>
@@ -70,6 +79,18 @@ const props = defineProps<Props>()
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
+}
+
+.authors__avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  block-size: 100%;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-accent), #0f172a);
 }
 
 .authors__info {

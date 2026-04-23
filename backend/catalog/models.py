@@ -22,6 +22,14 @@ class Photo(models.Model):
     description = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="photos")
     image = models.ImageField(upload_to="photos/")
+    image_webp = models.ImageField(
+        upload_to="previews/webp/", null=True, blank=True
+    )
+    image_avif = models.ImageField(
+        upload_to="previews/avif/", null=True, blank=True
+    )
+    blur_hash = models.CharField(max_length=64, blank=True)
+    is_processed = models.BooleanField(default=False)
     orientation = models.CharField(max_length=16, choices=Orientation.choices)
     
     # JSON поля для гибкости (теги и лицензии)

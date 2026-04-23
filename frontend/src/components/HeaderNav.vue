@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { auth } from "../utils/auth";
+import { LogOut, User, LayoutDashboard } from "lucide-vue-next";
 
 const isMenuOpen = ref(false);
 const isScrolled = ref(false);
@@ -105,11 +106,29 @@ onUnmounted(() => {
 
       <div class="header__actions">
         <template v-if="currentUser">
-          <RouterLink v-if="isAdmin" class="btn btn--ghost" to="/admin"
-            >Админка</RouterLink
+          <RouterLink
+            v-if="isAdmin"
+            class="header__action-icon"
+            to="/admin"
+            title="Админ-панель"
           >
-          <RouterLink class="header__user" to="/profile">{{ currentUser.displayName || currentUser.username || currentUser.name }}</RouterLink>
-          <button class="btn btn--ghost" @click="handleLogout">Выйти</button>
+            <LayoutDashboard :size="20" />
+          </RouterLink>
+          <RouterLink
+            class="header__user-link"
+            to="/profile"
+            :title="currentUser.displayName || currentUser.username"
+          >
+            <User :size="20" />
+            <span>{{ currentUser.displayName || currentUser.username }}</span>
+          </RouterLink>
+          <button
+            class="header__action-icon header__action-icon--logout"
+            @click="handleLogout"
+            title="Выйти"
+          >
+            <LogOut :size="20" />
+          </button>
         </template>
         <template v-else>
           <RouterLink class="btn btn--ghost" to="/login">Войти</RouterLink>
@@ -215,7 +234,7 @@ onUnmounted(() => {
                   Админка
                 </RouterLink>
                 <RouterLink class="header__mobile-user" to="/profile" @click="closeMenu">
-                  {{ currentUser.displayName || currentUser.username || currentUser.name }}
+                  {{ currentUser.displayName || currentUser.username }}
                 </RouterLink>
                 <button class="btn btn--ghost" @click="handleLogout">
                   Выйти
@@ -329,7 +348,48 @@ onUnmounted(() => {
 .header__actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1.25rem;
+}
+
+.header__user-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.header__user-link:hover {
+  background: var(--color-surface);
+  color: var(--color-accent);
+}
+
+.header__action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header__action-icon:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.header__action-icon--logout:hover {
+  color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.05);
 }
 
 .header__burger {

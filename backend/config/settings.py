@@ -141,13 +141,62 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Настройка Whitenoise для отдачи фронтенда
 WHITENOISE_ROOT = BASE_DIR.parent / "frontend" / "dist"
 
-STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
-}
+_USE_S3 = all(
+    [
+        os.environ.get("AWS_ACCESS_KEY_ID", "").strip(),
+        os.environ.get("AWS_SECRET_ACCESS_KEY", "").strip(),
+        os.environ.get("AWS_STORAGE_BUCKET_NAME", "").strip(),
+    ]
+)
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+if _USE_S3:
+    STORAGES = {
+        "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+    _endpoint = os.environ.get("AWS_S3_ENDPOINT_URL", "").strip()
+    AWS_S3_ENDPOINT_URL = _endpoint or None
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "ru-1")
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = None
+else:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "").strip()
+CELERY_TASK_ALWAYS_EAGER = not bool(CELERY_BROKER_URL)
+if CELERY_BROKER_URL:
+    CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
+
+_REDIS_URL = os.environ.get("REDIS_URL", "").strip()
+if _REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": _REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "phototochka-local",
+        }
+    }
+
+SHOWCASE_CACHE_SECONDS = int(os.environ.get("SHOWCASE_CACHE_SECONDS", "0"))
 
 # CORS
 CORS_ALLOWED_ORIGINS = [

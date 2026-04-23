@@ -8,17 +8,23 @@
 
 ## Интерфейс
 
+
 | Главная | Каталог | Карточка фото |
-| :---: | :---: | :---: |
-| ![Главная](readme-assets/screenshots/p1_home_hero.jpg) | ![Каталог](readme-assets/screenshots/p3_catalog_filters.jpg) | ![Карточка](readme-assets/screenshots/p4_photo_breadcrumbs.jpg) |
+| ------- | ------- | ------------- |
+| Главная | Каталог | Карточка      |
+
+
 
 | Новинки на главной | Лента каталога | Блок доверия |
-| :---: | :---: | :---: |
-| ![Новинки](readme-assets/screenshots/p2_home_showcase.jpg) | ![Лента](readme-assets/screenshots/p5_catalog_scrolled.jpg) | ![Доверие](readme-assets/screenshots/p6_home_trust_subscribe.jpg) |
+| ------------------ | -------------- | ------------ |
+| Новинки            | Лента          | Доверие      |
+
+
 
 | Похожие фото |
-| :---: |
-| ![Похожие](readme-assets/screenshots/p7_photo_similar.jpg) |
+| ------------ |
+| Похожие      |
+
 
 > Скриншоты можно переснять: `./photo build`, затем в одном терминале `./photo up`, в другом — `cd frontend && npm run capture:readme` (нужен `npx playwright install chromium`).
 
@@ -39,25 +45,29 @@
 
 ## Возможности
 
-| Область           | Что реализовано                                                              |
-| ----------------- | ---------------------------------------------------------------------------- |
-| **Витрина**       | Главная с динамическими подборками, поиском и блоками доверия.               |
-| **Каталог**       | Реальные данные из БД, фильтры, избранное, пагинация.                        |
-| **Карточка фото** | Детали, теги, похожие работы (через API).                                    |
-| **Профиль**       | JWT-авторизация, редактирование данных, личный кабинет.                      |
-| **Админка**       | Панель управления статистикой, авторами и категориями (на Vue + API).        |
-| **Качество**      | Pytest (Backend), Playwright E2E и Visual Regression тесты.                  |
+
+| Область           | Что реализовано                                                       |
+| ----------------- | --------------------------------------------------------------------- |
+| **Витрина**       | Главная с динамическими подборками, поиском и блоками доверия.        |
+| **Каталог**       | Реальные данные из БД, фильтры, избранное, пагинация.                 |
+| **Карточка фото** | Детали, теги, похожие работы (через API).                             |
+| **Профиль**       | JWT-авторизация, редактирование данных, личный кабинет.               |
+| **Админка**       | Панель управления статистикой, авторами и категориями (на Vue + API). |
+| **Качество**      | Pytest (Backend), Playwright E2E и Visual Regression тесты.           |
+
 
 ---
 
 ## Стек
 
-| Слой           | Технологии                                             |
-| -------------- | ------------------------------------------------------ |
-| **Frontend**   | Vue 3, Vite, TypeScript, Vue Router                    |
-| **Backend**    | Django 5, DRF, JWT (SimpleJWT), Whitenoise             |
-| **QA / Tests** | Playwright (E2E & Visual), Pytest (API)                |
-| **Infrastructure** | Docker, Postgres, Bash CLI Orchestrator            |
+
+| Слой               | Технологии                                 |
+| ------------------ | ------------------------------------------ |
+| **Frontend**       | Vue 3, Vite, TypeScript, Vue Router        |
+| **Backend**        | Django 5, DRF, JWT (SimpleJWT), Whitenoise |
+| **QA / Tests**     | Playwright (E2E & Visual), Pytest (API)    |
+| **Infrastructure** | Docker, Postgres, Bash CLI Orchestrator    |
+
 
 ---
 
@@ -78,33 +88,70 @@ flowchart LR
   API <--> FS
 ```
 
+
+
 ---
 
 ## Быстрый старт
 
-Для управления всеми процессами используется корневой CLI-инструмент `./photo`.
+Все команды — через CLI `./photo` в корне репозитория.
 
 ### Требования
-* Node.js 20+
-* Python 3.12+
-* Docker Desktop
 
-### Установка и запуск (Docker)
+- **Node.js 20+**
+- **Docker Desktop** (для сценария «один шаг») или **Python 3.12+** для полностью локального режима
+- (Опционально) Python-venv, если не используете Docker
+
+### Один шаг: сайт + API + демо-данные
+
+Нужен запущенный **Docker Desktop**.
+
+**Рабочая директория — корень репозитория** (папка `graduation/`, где лежит файл `photo`).  
+Если вы в `backend/`, либо `cd ..`, либо запускайте **`./photo start`** (обёртка [backend/photo](backend/photo) поднимается в корень).
+
+```bash
+cd /путь/к/graduation
+chmod +x photo backend/photo   # один раз, если zsh: permission denied
+./photo start
+```
+
+Скрипт: создаст `.env` при отсутствии, **соберёт образ**, поднимет Postgres и Django, **применит миграции**, выполнит **seed** (кроме `SKIP_SEED=1`), поставит npm-зависимости и запустит **Vite** на [http://localhost:5173](http://localhost:5173) (API проксируется на порт 8000). Останов: `Ctrl+C` в терминале, затем при желании `./photo down`.
+
+**Если `ReadTimeout` / `No matching distribution found for Django` при `docker build`** — это **сбой сети к PyPI** (таймаут, SSL, фильтр), а не «нет пакета». Повторите сборку позже, включите стабильный VPN или задайте в **корневом** `.env` строку `PIP_INDEX_URL=https://pypi.org/simple` и снова `docker compose build --no-cache` / `./photo start`. Образы стали **легче**: добавлен [backend/.dockerignore](backend/.dockerignore) (раньше в контекст попадал `.venv` и десятки мегабайт).
+
+*Первая сборка после `git pull` с новыми `requirements.txt`: уже включено в `./photo start`. Чтобы пропустить `docker build`, можно `NO_BUILD=1 ./photo start`.*
+
+### Только бэкенд в Docker (без фронта)
+
 ```bash
 ./photo up
+./photo seed
 ```
-Команда создаст `.env`, поднимет PostgreSQL и Django в контейнерах, применит миграции и дождется готовности API.
+
+### Локально без Docker (два терминала)
+
+```bash
+./photo dev:back    # venv при первом запуске создаётся сам; миграции; :8000
+```
+
+```bash
+./photo dev:front   # :5173
+```
 
 ### Наполнение демо-данными
+
 ```bash
 ./photo seed
 ```
-Заполнит базу реальными фотографиями из папки `frontend/src/assets/images`.
+
+Если крутится **Docker** — сид идёт в **Postgres** в контейнере. Если Docker выключен — в локальный `backend` с SQLite/вашим `DATABASE_URL` из `backend/.env`.
 
 ### Запуск тестов
+
 ```bash
 ./photo test:full
 ```
+
 Прогонит полный цикл: тесты бэкенда, проверку типов фронтенда и сквозные тесты Playwright.
 
 ---
@@ -114,14 +161,15 @@ flowchart LR
 Проект поддерживает автоматизированный деплой на любой Linux-сервер с Docker через `rsync` и `ssh` (аналогично скриптам в `jitro`).
 
 1. Настройте параметры сервера в `.env`:
-   - `PHOTO_DEPLOY_HOST` — IP или домен сервера.
-   - `PHOTO_DEPLOY_USER` — пользователь (например, `root`).
-   - `PHOTO_DEPLOY_PATH` — путь к проекту на сервере.
-
+  - `PHOTO_DEPLOY_HOST` — IP или домен сервера.
+  - `PHOTO_DEPLOY_USER` — пользователь (например, `root`).
+  - `PHOTO_DEPLOY_PATH` — путь к проекту на сервере.
 2. Запустите деплой:
+
 ```bash
 ./photo deploy
 ```
+
 Скрипт синхронизирует код, соберет образы на сервере, накатит миграции, заполнит сиды и перезапустит контейнеры.
 
 ---
@@ -130,13 +178,24 @@ flowchart LR
 
 Копируйте из `[.env.example](./.env.example)`.
 
-| Переменная          | Назначение                                               |
-| ------------------- | -------------------------------------------------------- |
-| `VITE_API_URL`      | URL API бэкенда (в dev — пусто для проксирования).       |
-| `DJANGO_SECRET_KEY` | Секретный ключ Django.                                   |
-| `DATABASE_URL`      | Строка подключения к БД (Postgres).                      |
-| `SEED_ADMIN_EMAIL`  | Email администратора для первичного сидирования.         |
-| `PHOTO_DEPLOY_HOST` | Хост для автоматизированного деплоя.                     |
+
+| Переменная          | Назначение                                                   |
+| ------------------- | ------------------------------------------------------------ |
+| `VITE_API_URL`      | URL API бэкенда (в dev — пусто для проксирования).           |
+| `DJANGO_SECRET_KEY` | Секретный ключ Django.                                       |
+| `DATABASE_URL`      | Строка подключения к БД (Postgres).                          |
+| `SEED_ADMIN_EMAIL`  | Email администратора для первичного сидирования.             |
+| `PHOTO_DEPLOY_HOST` | Хост для автоматизированного деплоя.                         |
+| `CELERY_BROKER_URL` | URL Redis (если пусто — Celery в eager, без воркера).        |
+| `REDIS_URL`         | Кэш Django; вместе с `SHOWCASE_CACHE_SECONDS` — кэш витрины. |
+| `AWS_*`             | S3: при задании ключа, бакета и секрета — хранение медиа.    |
+
+
+Фоновая обработка фото (WebP/AVIF после загрузки): при непустом `CELERY_BROKER_URL` запустите воркер:
+
+```bash
+cd backend && . .venv/bin/activate && celery -A config worker -l info
+```
 
 ---
 
@@ -153,4 +212,5 @@ flowchart LR
 - **Rate Limiting**: Рекомендуется настроить на уровне Nginx перед деплоем в прод.
 
 ---
+
 © 2026 ФотоТочка. Дипломный проект.
