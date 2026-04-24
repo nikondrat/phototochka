@@ -19,7 +19,7 @@ export async function getPhotos(params: ApiPhotoParams = {}): Promise<PhotoListR
   
   if (params.category) query.set('category__slug', params.category)
   if (params.search) query.set('search', params.search)
-  if (params.orientation) query.set('orientation', params.orientation)
+  if (params.orientation) query.set('orientation__slug', params.orientation)
   if (params.page) query.set('page', params.page.toString())
   if (params.limit) query.set('limit', params.limit.toString())
 
@@ -33,6 +33,13 @@ export async function getPhotos(params: ApiPhotoParams = {}): Promise<PhotoListR
     limit: params.limit || 12,
     hasMore: !!data.next
   }
+}
+
+/**
+ * Получить список ориентаций
+ */
+export async function getOrientations(): Promise<any[]> {
+  return await apiFetch<any[]>('/orientations/')
 }
 
 /**

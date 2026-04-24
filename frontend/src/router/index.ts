@@ -35,6 +35,11 @@ const router = createRouter({
       component: () => import('../pages/BlogPage.vue'),
     },
     {
+      path: '/blog/:slug',
+      name: 'blog-post',
+      component: () => import('../pages/BlogPostPage.vue'),
+    },
+    {
       path: '/help',
       name: 'help',
       component: () => import('../pages/HelpPage.vue'),
@@ -76,6 +81,11 @@ const router = createRouter({
       component: () => import('../pages/PhotographerUpload.vue'),
     },
     {
+      path: '/photographer/photos/edit/:id',
+      name: 'photographer-edit',
+      component: () => import('../pages/PhotographerUpload.vue'),
+    },
+    {
       path: '/photographer/analytics',
       name: 'photographer-analytics',
       component: () => import('../pages/PhotographerAnalytics.vue'),
@@ -90,6 +100,11 @@ const router = createRouter({
       name: 'admin',
       component: () => import('../pages/AdminPage.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: '/author/@:username',
+      name: 'public-profile',
+      component: () => import('../pages/PublicProfilePage.vue'),
     },
     {
       path: '/:pathMatch(.*)*',

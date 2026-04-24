@@ -53,7 +53,7 @@ onMounted(() => {
       class="home-state home-state--loading container"
       aria-busy="true"
     >
-      <p>Загружаем подборки…</p>
+      <p>{{ $t('home.loadingShowcase') }}</p>
     </div>
 
     <div
@@ -63,7 +63,7 @@ onMounted(() => {
     >
       <p>{{ errorMessage }}</p>
       <button type="button" class="btn btn--primary" @click="retry">
-        Повторить
+        {{ $t('common.retry') }}
       </button>
     </div>
 
@@ -75,12 +75,12 @@ onMounted(() => {
         aria-labelledby="empty-hero-title"
       >
         <h1 id="empty-hero-title" class="home-empty-hero__title">
-          ФотоТочка
+          {{ $t('home.title') }}
         </h1>
         <p class="home-empty-hero__text">
-          Пока нет фотографий для витрины. Загрузите контент или выполните сидирование БД.
+          {{ $t('home.heroText') }}
         </p>
-        <RouterLink class="btn btn--primary" to="/catalog">Открыть каталог</RouterLink>
+        <RouterLink class="btn btn--primary" to="/catalog">{{ $t('home.catalogBtn') }}</RouterLink>
       </section>
 
       <SearchFilters
@@ -89,9 +89,9 @@ onMounted(() => {
       />
       <PhotoCarousel
         section-id="catalog"
-        eyebrow="Новинки каталога"
-        title="Последние добавления"
-        description="Новые кадры от авторов. Следите за обновлениями и сохраняйте понравившиеся работы."
+        :eyebrow="$t('home.newCatalog')"
+        :title="$t('home.latestAdditions')"
+        :description="$t('home.newCatalogDesc')"
         :photos="showcase.newPhotos"
       />
       <CategoryGrid :categories="showcase.categories" />
@@ -162,7 +162,7 @@ onMounted(() => {
       <DualCTA />
     </template>
   </main>
-  <RouterLink class="floating-cta" to="/catalog">Каталог</RouterLink>
+  <RouterLink class="floating-cta" to="/catalog">{{ $t('nav.catalog') }}</RouterLink>
 </template>
 
 <style scoped>

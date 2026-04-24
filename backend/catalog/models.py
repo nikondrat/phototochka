@@ -11,16 +11,21 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-class Photo(models.Model):
-    class Orientation(models.TextChoices):
-        LANDSCAPE = "landscape", "Landscape"
-        PORTRAIT = "portrait", "Portrait"
-        SQUARE = "square", "Square"
+class Orientation(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+    slug = models.SlugField(max_length=64, unique=True)
 
+    def __str__(self):
+        return self.name
+
+class Photo(models.Model):
     public_id = models.CharField(max_length=40, unique=True, db_index=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="photos")
+    orientation = models.ForeignKey(
+        Orientation, on_delete=models.PROTECT, related_name="photos", null=True
+    )
     image = models.ImageField(upload_to="photos/")
     image_webp = models.ImageField(
         upload_to="previews/webp/", null=True, blank=True
@@ -30,7 +35,6 @@ class Photo(models.Model):
     )
     blur_hash = models.CharField(max_length=64, blank=True)
     is_processed = models.BooleanField(default=False)
-    orientation = models.CharField(max_length=16, choices=Orientation.choices)
     
     # JSON поля для гибкости (теги и лицензии)
     tags = models.JSONField(default=list, blank=True)

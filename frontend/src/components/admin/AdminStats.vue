@@ -24,7 +24,7 @@ const stats = computed(() => [
     color: "#10B981",
     bgGradient:
       "linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))",
-    trend: "+12%",
+    trend: (statsData.value as any)?.trends?.photos || "+0%",
   },
   {
     label: "Авторов",
@@ -33,7 +33,7 @@ const stats = computed(() => [
     color: "#3B82F6",
     bgGradient:
       "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))",
-    trend: "+5%",
+    trend: (statsData.value as any)?.trends?.authors || "+0%",
   },
   {
     label: "Просмотров",
@@ -42,7 +42,7 @@ const stats = computed(() => [
     color: "#8B5CF6",
     bgGradient:
       "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
-    trend: "+23%",
+    trend: (statsData.value as any)?.trends?.views || "+0%",
   },
   {
     label: "Продаж",
@@ -51,7 +51,7 @@ const stats = computed(() => [
     color: "#F59E0B",
     bgGradient:
       "linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))",
-    trend: "+8%",
+    trend: (statsData.value as any)?.trends?.sales || "+0%",
   },
 ]);
 

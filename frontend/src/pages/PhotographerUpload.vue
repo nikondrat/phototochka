@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { onMounted, ref, computed } from "vue";
+import { RouterLink, useRouter, useRoute } from "vue-router";
 import PhotographerLayout from "../components/PhotographerLayout.vue";
-import { uploadAuthorPhoto } from "../services/authorPhotoService";
+import { uploadAuthorPhoto, authorService } from "../services/authorPhotoService";
 import { fetchCategoryList } from "../services/showcaseService";
 import { formatApiFormError } from "../utils/apiErrors";
 import { computeBlurHash } from "../utils/computeBlurHash";
 
 const router = useRouter();
+const route = useRoute();
+
+const photoId = computed(() => route.params.id as string);
+const isEditMode = computed(() => !!photoId.value);
 
 const title = ref("");
 const categorySlug = ref("");
@@ -17,32 +21,37 @@ const description = ref("");
 const selectedFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 const isUploading = ref(false);
+const isLoading = ref(false);
 const error = ref("");
 const categories = ref<{ id: number; name: string; slug: string }[]>([]);
 const categoriesError = ref("");
 
-function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    selectedFile.value = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      previewUrl.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+async function loadPhotoData() {
+  if (!isEditMode.value) return;
+  
+  isLoading.value = true;
+  try {
+    const photo = await authorService.getPhoto(photoId.value);
+    title.value = photo.title;
+    categorySlug.value = photo.category; // Assuming category is slug in API or needs mapping
+    tags.value = (photo.tags || []).join(", ");
+    price.value = String(photo.price || "");
+    description.value = photo.description || "";
+    previewUrl.value = photo.file; // API should return absolute URL
+  } catch (err) {
+    error.value = "Не удалось загрузить данные фотографии";
+  } finally {
+    isLoading.value = false;
   }
-}
-
-function removeFile() {
-  selectedFile.value = null;
-  previewUrl.value = null;
 }
 
 onMounted(() => {
   void (async () => {
     try {
       categories.value = await fetchCategoryList();
+      if (isEditMode.value) {
+        await loadPhotoData();
+      }
     } catch {
       categoriesError.value =
         "Не удалось загрузить список категорий. Проверьте API и повторите.";
@@ -54,7 +63,7 @@ async function handleSubmit(e: Event) {
   e.preventDefault();
   error.value = "";
 
-  if (!title.value.trim() || !categorySlug.value || !selectedFile.value) {
+  if (!title.value.trim() || !categorySlug.value || (!selectedFile.value && !isEditMode.value)) {
     error.value = "Заполните все обязательные поля";
     return;
   }
@@ -62,25 +71,36 @@ async function handleSubmit(e: Event) {
   isUploading.value = true;
 
   try {
-    const blurHash = await computeBlurHash(selectedFile.value);
     const tagList = tags.value
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
-    await uploadAuthorPhoto({
+      
+    const data: any = {
       title: title.value.trim(),
       description: description.value.trim(),
       categorySlug: categorySlug.value,
       price: price.value === "" ? 0 : Math.max(0, Number(price.value)),
       tags: tagList,
-      file: selectedFile.value,
-      blurHash,
-    });
+    };
+
+    if (isEditMode.value) {
+      if (selectedFile.value) {
+        data.file = selectedFile.value;
+        data.blurHash = await computeBlurHash(selectedFile.value);
+      }
+      await authorService.updatePhoto(photoId.value, data);
+    } else {
+      data.file = selectedFile.value;
+      data.blurHash = await computeBlurHash(selectedFile.value);
+      await uploadAuthorPhoto(data);
+    }
+    
     await router.push("/photographer/photos");
   } catch (err) {
     error.value = formatApiFormError(
       err,
-      "Ошибка при загрузке фотографии. Попробуйте позже."
+      isEditMode.value ? "Ошибка при обновлении фотографии." : "Ошибка при загрузке фотографии."
     );
   } finally {
     isUploading.value = false;
@@ -197,7 +217,7 @@ async function handleSubmit(e: Event) {
 
           <!-- Информация о фотографии -->
           <div class="upload-section">
-            <h2 class="upload-section__title">Информация</h2>
+            <h2 class="upload-section__title">{{ isEditMode ? 'Редактирование' : 'Информация' }}</h2>
             <div class="form-group">
               <label for="title" class="form-label">
                 Название <span class="form-label__required">*</span>
@@ -281,13 +301,13 @@ async function handleSubmit(e: Event) {
           <button
             type="submit"
             class="btn btn--primary"
-            :disabled="isUploading || !selectedFile"
+            :disabled="isUploading || (!selectedFile && !isEditMode)"
           >
             <span v-if="isUploading">
               <span class="spinner" />
-              Загрузка...
+              {{ isEditMode ? 'Сохранение...' : 'Загрузка...' }}
             </span>
-            <span v-else>Загрузить фотографию</span>
+            <span v-else>{{ isEditMode ? 'Сохранить изменения' : 'Загрузить фотографию' }}</span>
           </button>
         </div>
       </form>

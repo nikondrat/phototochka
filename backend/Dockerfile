@@ -19,7 +19,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     if [ -n "$PIP_INDEX_URL" ]; then \
       pip config set global.index-url "$PIP_INDEX_URL"; \
     fi \
-    && pip install --retries=8 --default-timeout=120 --no-cache-dir -r requirements.txt
+    && pip install --retries=10 --default-timeout=600 --no-cache-dir \
+       --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org \
+       -r requirements.txt
 
 # Копирование кода
 COPY . .

@@ -175,7 +175,7 @@ onUnmounted(() => {
                 <router-link to="/catalog">{{ $t('nav.catalog') }}</router-link>
               </li>
               <li class="breadcrumbs__item">
-                <RouterLink :to="`/catalog/photos?category=${photo.category_slug}`">
+                <RouterLink :to="`/catalog/photos?category=${photo.category_slug || photo.category}`">
                   {{ photo.category }}
                 </RouterLink>
               </li>

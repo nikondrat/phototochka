@@ -7,6 +7,7 @@ import PhotoCard from "../components/PhotoCard.vue";
 import {
   fetchAuthorPhotos,
   mapAuthorPhotoToCard,
+  authorService,
   type AuthorPhotoApi,
 } from "../services/authorPhotoService";
 
@@ -26,11 +27,18 @@ const loadError = ref("");
 
 const dashNone = "—";
 
+const statsData = ref<any>(null);
+
 async function load() {
   loadState.value = "loading";
   loadError.value = "";
   try {
-    myPhotos.value = await fetchAuthorPhotos();
+    const [photos, stats] = await Promise.all([
+      fetchAuthorPhotos(),
+      authorService.getStats()
+    ]);
+    myPhotos.value = photos;
+    statsData.value = stats;
     loadState.value = "ok";
   } catch {
     loadState.value = "error";
@@ -43,11 +51,7 @@ onMounted(() => {
 });
 
 const stats = computed<StatCard[]>(() => {
-  const list = myPhotos.value;
-  const total = list.length;
-  const views = list.reduce((s, p) => s + (p.views || 0), 0);
-  const dls = list.reduce((s, p) => s + (p.downloads || 0), 0);
-  const portfolio = list.reduce((s, p) => s + (p.price || 0), 0);
+  const s = statsData.value;
   const fmtRub = (n: number) =>
     new Intl.NumberFormat("ru-RU", {
       style: "currency",
@@ -59,8 +63,8 @@ const stats = computed<StatCard[]>(() => {
     {
       id: "total-photos",
       title: "Всего фотографий",
-      value: total,
-      change: dashNone,
+      value: s?.totalPhotos || 0,
+      change: s?.trends?.photos || dashNone,
       icon: "photos",
       color: "#10B981",
       bgGradient:
@@ -69,8 +73,8 @@ const stats = computed<StatCard[]>(() => {
     {
       id: "total-views",
       title: "Просмотры",
-      value: views,
-      change: dashNone,
+      value: s?.totalViews || 0,
+      change: s?.trends?.views || dashNone,
       icon: "view",
       color: "#8B5CF6",
       bgGradient:
@@ -79,8 +83,8 @@ const stats = computed<StatCard[]>(() => {
     {
       id: "total-downloads",
       title: "Скачивания",
-      value: dls,
-      change: dashNone,
+      value: s?.totalDownloads || 0,
+      change: s?.trends?.downloads || dashNone,
       icon: "view",
       color: "#3B82F6",
       bgGradient:
@@ -88,9 +92,9 @@ const stats = computed<StatCard[]>(() => {
     },
     {
       id: "portfolio-sum",
-      title: "Сумма цен (портфель)",
-      value: fmtRub(portfolio),
-      change: dashNone,
+      title: "Заработано",
+      value: fmtRub(s?.totalEarnings || 0),
+      change: s?.trends?.earnings || dashNone,
       icon: "money",
       color: "#F59E0B",
       bgGradient:
@@ -208,7 +212,9 @@ const recentPhotos = computed(() =>
             :photo="photo"
             :show-status="true"
             :show-stats="true"
+            :show-actions="true"
             variant="compact"
+            @edit="() => $router.push(`/photographer/photos/edit/${photo.id}`)"
           />
         </div>
         <p v-else class="dashboard__muted">

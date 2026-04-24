@@ -1,5 +1,19 @@
 <script setup lang="ts">
-import { blogPosts, blogSpotlight } from '../data/pages'
+import { ref, onMounted } from 'vue'
+import { getBlogPosts, type BlogPost } from '../services/blogService'
+
+const posts = ref<BlogPost[]>([])
+const loading = ref(true)
+
+onMounted(async () => {
+  try {
+    posts.value = await getBlogPosts()
+  } catch (error) {
+    console.error('Failed to fetch blog posts', error)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
@@ -18,19 +32,18 @@ import { blogPosts, blogSpotlight } from '../data/pages'
             <span>Авторские рубрики и подборки</span>
           </div>
         </div>
-        <article class="spotlight">
+        <article v-if="!loading && posts.length > 0" class="spotlight">
           <img
-            :src="blogSpotlight.imageUrl"
-            :alt="blogSpotlight.title"
-            loading="lazy"
-            decoding="async"
+            v-if="posts[0] && posts[0].coverImage"
+            :src="posts[0].coverImage"
+            :alt="posts[0].title"
           />
-          <div class="spotlight__body">
+          <div v-if="posts[0]" class="spotlight__body">
             <span class="spotlight__eyebrow">Исследование</span>
-            <h2>{{ blogSpotlight.title }}</h2>
-            <p>{{ blogSpotlight.description }}</p>
-            <RouterLink class="spotlight__link" to="/blog?post=color-theory#trends">
-              {{ blogSpotlight.linkLabel }} →
+            <h2>{{ posts[0].title }}</h2>
+            <p v-if="posts[0].content">{{ posts[0].content.substring(0, 100) }}...</p>
+            <RouterLink class="spotlight__link" :to="`/blog/${posts[0].slug}`">
+              {{ $t('common.actions') }} →
             </RouterLink>
           </div>
         </article>
@@ -47,19 +60,22 @@ import { blogPosts, blogSpotlight } from '../data/pages'
             живыми кейсами от наших авторов.
           </p>
         </div>
-        <div class="blog-list">
-          <article v-for="post in blogPosts" :key="post.id" class="blog-card">
+        <div v-if="loading" class="blog-list">
+          <div v-for="i in 3" :key="i" class="blog-card blog-card--skeleton">
+            <div class="skeleton skeleton--text"></div>
+            <div class="skeleton skeleton--title"></div>
+            <div class="skeleton skeleton--text skeleton--short"></div>
+          </div>
+        </div>
+        <div v-else class="blog-list">
+          <article v-for="post in posts" :key="post.id" class="blog-card">
             <div class="blog-card__meta">
-              <span>{{ post.category }}</span>
-              <span>{{ post.readTime }}</span>
+              <span>{{ post.author.displayName }}</span>
+              <span>{{ new Date(post.createdAt).toLocaleDateString() }}</span>
             </div>
             <h3>{{ post.title }}</h3>
-            <p>{{ post.excerpt }}</p>
-            <div class="blog-card__footer">
-              <span>{{ post.author }}</span>
-              <span>{{ post.date }}</span>
-            </div>
-            <RouterLink class="blog-card__link" :to="`/blog?post=${post.id}`">
+            <p v-if="post.content">{{ post.content.substring(0, 150) }}...</p>
+            <RouterLink class="blog-card__link" :to="`/blog/${post.slug}`">
               Читать заметку →
             </RouterLink>
           </article>

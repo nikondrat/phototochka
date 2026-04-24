@@ -17,6 +17,21 @@ export interface AuthorPhotoApi {
   uploadedAt: string
 }
 
+export const authorService = {
+  async getStats(): Promise<any> {
+    return await apiFetch('/author/stats/')
+  },
+  async getPhoto(id: string | number): Promise<AuthorPhotoApi> {
+    return await apiFetch(`/author/photos/${id}/`)
+  },
+  async updatePhoto(id: string | number, data: any): Promise<AuthorPhotoApi> {
+    return await apiFetch(`/author/photos/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+  }
+}
+
 export async function fetchAuthorPhotos(): Promise<AuthorPhotoApi[]> {
   return apiFetch<AuthorPhotoApi[]>('/author/photos/')
 }

@@ -5,13 +5,29 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 
+from django.shortcuts import get_object_or_404
 from .serializers import (
     IdentifierTokenObtainPairSerializer,
     RegisterSerializer,
     UserSerializer,
+    UserPublicSerializer,
 )
 
 User = get_user_model()
+
+
+class AuthorPublicProfileView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserPublicSerializer
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = []
+    lookup_field = "username"
+
+    def get_object(self):
+        username = self.kwargs.get("username")
+        if username.startswith("@"):
+            username = username[1:]
+        return get_object_or_404(User, username=username, role__in=[User.Role.AUTHOR, User.Role.ADMIN])
 
 
 class IdentifierTokenObtainPairView(TokenObtainPairView):

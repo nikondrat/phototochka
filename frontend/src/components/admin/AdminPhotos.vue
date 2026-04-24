@@ -1,13 +1,29 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { popularPhotos, newPhotos } from "../../data/adminDemo";
-import type { ShowcasePhotoCard } from "../../types/showcase";
+import { ref, computed, onMounted } from "vue";
+import { adminService } from "../../services/adminService";
 import AdminIcon from "./AdminIcon.vue";
 
-const allPhotos = ref<ShowcasePhotoCard[]>([...popularPhotos, ...newPhotos]);
+const allPhotos = ref<any[]>([]);
+const loading = ref(true);
 const searchQuery = ref("");
 const selectedCategory = ref<string>("all");
 const viewMode = ref<"grid" | "list">("grid");
+
+async function loadPhotos() {
+  loading.value = true;
+  try {
+    const data = await adminService.getPhotos();
+    allPhotos.value = data.results || data || [];
+  } catch (error) {
+    console.error("Failed to fetch photos", error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(() => {
+  loadPhotos();
+});
 
 const filteredPhotos = computed(() => {
   let filtered = allPhotos.value;
@@ -18,7 +34,7 @@ const filteredPhotos = computed(() => {
       (photo) =>
         (photo.title || "").toLowerCase().includes(query) ||
         (photo.category || "").toLowerCase().includes(query) ||
-        photo.tags?.some((tag) => tag.toLowerCase().includes(query))
+        photo.tags?.some((tag: string) => tag.toLowerCase().includes(query))
     );
   }
 

@@ -1,11 +1,27 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { adminCategoryNames } from "../../data/adminDemo";
+import { ref, onMounted } from "vue";
+import { adminService } from "../../services/adminService";
 import AdminIcon from "./AdminIcon.vue";
 
-const allCategories = ref<string[]>([...adminCategoryNames]);
+const allCategories = ref<any[]>([]);
+const loading = ref(true);
 const newCategory = ref("");
 const isAdding = ref(false);
+
+async function loadCategories() {
+  loading.value = true;
+  try {
+    allCategories.value = await adminService.getCategories();
+  } catch (error) {
+    console.error("Failed to fetch categories", error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(() => {
+  loadCategories();
+});
 
 function addCategory() {
   if (
@@ -24,23 +40,21 @@ function deleteCategory(category: string) {
   }
 }
 
-const isEditing = ref<string | null>(null);
+const isEditing = ref<number | null>(null);
 const editingValue = ref("");
 
-function startEdit(category: string) {
-  isEditing.value = category;
-  editingValue.value = category;
+function startEdit(category: any) {
+  isEditing.value = category.id;
+  editingValue.value = category.name;
 }
 
 function saveEdit() {
-  if (!isEditing.value || !editingValue.value.trim()) return;
+  if (isEditing.value === null || !editingValue.value.trim()) return;
 
-  const index = allCategories.value.findIndex((c) => c === isEditing.value);
-  if (
-    index !== -1 &&
-    !allCategories.value.includes(editingValue.value.trim())
-  ) {
-    allCategories.value[index] = editingValue.value.trim();
+  // Здесь должен быть вызов API, но пока обновляем локально для демонстрации
+  const index = allCategories.value.findIndex((c) => c.id === isEditing.value);
+  if (index !== -1) {
+    allCategories.value[index].name = editingValue.value.trim();
   }
 
   isEditing.value = null;
@@ -112,10 +126,10 @@ function cancelEdit() {
     <div class="admin-categories__grid">
       <div
         v-for="category in allCategories"
-        :key="category"
+        :key="category.id"
         class="category-card"
       >
-        <div v-if="isEditing === category" class="category-card__edit">
+        <div v-if="isEditing === category.id" class="category-card__edit">
           <input
             v-model="editingValue"
             type="text"
@@ -136,7 +150,7 @@ function cancelEdit() {
         <div v-else class="category-card__content">
           <div class="category-card__header">
             <AdminIcon name="category" class="category-card__icon" :size="20" />
-            <span class="category-card__name">{{ category }}</span>
+            <span class="category-card__name">{{ category.name }}</span>
           </div>
           <div class="category-card__actions">
             <button
@@ -148,7 +162,7 @@ function cancelEdit() {
             </button>
             <button
               class="category-card__action-btn category-card__action-btn--danger"
-              @click="deleteCategory(category)"
+              @click="deleteCategory(category.id)"
               aria-label="Удалить"
             >
               <AdminIcon name="delete" :size="18" />

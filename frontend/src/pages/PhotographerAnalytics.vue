@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import PhotographerLayout from '../components/PhotographerLayout.vue'
 import AdminIcon from '../components/admin/AdminIcon.vue'
+import { authorService } from '../services/authorPhotoService'
 
 interface ChartData {
   date: string
@@ -29,35 +30,33 @@ interface StatCard {
 }
 
 const timeRange = ref<'week' | 'month' | 'year'>('month')
+const loading = ref(true)
+const statsData = ref<any>(null)
 
-const chartData = ref<ChartData[]>([
-  { date: '2024-01-01', views: 1200, downloads: 15, earnings: 4500 },
-  { date: '2024-01-08', views: 1800, downloads: 22, earnings: 6600 },
-  { date: '2024-01-15', views: 2100, downloads: 28, earnings: 8400 },
-  { date: '2024-01-22', views: 2400, downloads: 32, earnings: 9600 },
-  { date: '2024-01-29', views: 2800, downloads: 38, earnings: 11400 },
-])
-
-const topPhotos = ref<TopPhoto[]>([
-  { id: '1', title: 'Сияние Санторини', views: 2100, downloads: 18, earnings: 5400 },
-  { id: '2', title: 'Горное утро', views: 1240, downloads: 12, earnings: 3600 },
-  { id: '3', title: 'Вид сверху', views: 890, downloads: 8, earnings: 2400 },
-  { id: '4', title: 'Туманная тропа', views: 560, downloads: 5, earnings: 1500 },
-])
-
-const totalStats = {
-  views: 24500,
-  downloads: 342,
-  earnings: 45200,
-  photos: 128,
+async function loadData() {
+  loading.value = true
+  try {
+    statsData.value = await authorService.getStats()
+  } catch (e) {
+    console.error('Failed to load analytics', e)
+  } finally {
+    loading.value = false
+  }
 }
+
+onMounted(() => {
+  loadData()
+})
+
+const chartData = computed<ChartData[]>(() => statsData.value?.chartData || [])
+const topPhotos = computed<TopPhoto[]>(() => statsData.value?.topPhotos || [])
 
 const stats = computed<StatCard[]>(() => [
   {
     id: 'views',
     title: 'Всего просмотров',
-    value: totalStats.views,
-    change: '+18% за месяц',
+    value: statsData.value?.totalViews || 0,
+    change: statsData.value?.trends?.views || '—',
     icon: 'view',
     color: '#8B5CF6',
     bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))',
@@ -65,8 +64,8 @@ const stats = computed<StatCard[]>(() => [
   {
     id: 'downloads',
     title: 'Скачиваний',
-    value: totalStats.downloads,
-    change: '+23% за месяц',
+    value: statsData.value?.totalDownloads || 0,
+    change: statsData.value?.trends?.downloads || '—',
     icon: 'download',
     color: '#3B82F6',
     bgGradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))',
@@ -74,8 +73,8 @@ const stats = computed<StatCard[]>(() => [
   {
     id: 'earnings',
     title: 'Заработано',
-    value: `₽${totalStats.earnings.toLocaleString()}`,
-    change: '+15% за месяц',
+    value: `₽${(statsData.value?.totalEarnings || 0).toLocaleString()}`,
+    change: statsData.value?.trends?.earnings || '—',
     icon: 'money',
     color: '#F59E0B',
     bgGradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))',
@@ -83,8 +82,8 @@ const stats = computed<StatCard[]>(() => [
   {
     id: 'photos',
     title: 'Активных фото',
-    value: totalStats.photos,
-    change: '+12 за месяц',
+    value: statsData.value?.totalPhotos || 0,
+    change: statsData.value?.trends?.photos || '—',
     icon: 'photos',
     color: '#10B981',
     bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))',

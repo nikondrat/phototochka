@@ -7,15 +7,24 @@ from rest_framework.response import Response
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 from . import showcase_settings as showcase_sc
-from .models import Category, Photo
+from .models import Category, Photo, Orientation
 from .permissions import IsAuthenticatedUpload
 from .serializers import (
     AuthorPhotoCreateSerializer,
     CategorySerializer,
+    OrientationSerializer,
     PhotoDetailSerializer,
     PhotoListSerializer,
 )
 from .showcase_service import build_showcase_payload
+
+
+class OrientationListView(generics.ListAPIView):
+    queryset = Orientation.objects.all().order_by("name")
+    serializer_class = OrientationSerializer
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+    pagination_class = None
 
 
 def _serialize_showcase_authors(authors, request):
@@ -33,6 +42,7 @@ def _serialize_showcase_authors(authors, request):
             {
                 "id": str(u.id),
                 "name": name,
+                "username": u.username,
                 "specialty": specialty,
                 "avatarUrl": avatar_url,
                 "photosCount": int(getattr(u, "photos_count", 0) or 0),
@@ -46,11 +56,13 @@ class CategoryListView(generics.ListAPIView):
     queryset = Category.objects.all().order_by("name")
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
     pagination_class = None
 
 
 class ShowcaseView(views.APIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def get(self, request, *args, **kwargs):
         ttl = getattr(settings, "SHOWCASE_CACHE_SECONDS", 0) or 0
@@ -71,6 +83,9 @@ class ShowcaseView(views.APIView):
             ).data,
             "categories": CategorySerializer(
                 payload["categories"], many=True
+            ).data,
+            "orientations": OrientationSerializer(
+                Orientation.objects.all(), many=True
             ).data,
             "authors": _serialize_showcase_authors(
                 payload["authors"], request
@@ -122,23 +137,58 @@ class AuthorPhotoListView(generics.ListCreateAPIView):
             cache.delete("api:showcase:v1")
 
 
+class AuthorPhotoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """GET, PATCH, DELETE для конкретного фото автора."""
+
+    permission_classes = [IsAuthenticatedUpload]
+    serializer_class = AuthorPhotoCreateSerializer  # For updates
+    lookup_field = "public_id"
+    lookup_url_kwarg = "public_id"
+
+    def get_queryset(self):
+        return Photo.objects.filter(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return PhotoListSerializer
+        return AuthorPhotoCreateSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
+        if getattr(settings, "SHOWCASE_CACHE_SECONDS", 0) > 0:
+            cache.delete("api:showcase:v1")
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        if getattr(settings, "SHOWCASE_CACHE_SECONDS", 0) > 0:
+            cache.delete("api:showcase:v1")
+
+
 class PhotoListView(generics.ListAPIView):
     queryset = Photo.objects.select_related("category", "author").all()
     serializer_class = PhotoListSerializer
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["category__slug", "orientation"]
+    filterset_fields = ["category__slug", "orientation", "author__username"]
 
     def get_queryset(self):
         qs = super().get_queryset()
         search = self.request.query_params.get("search")
         if search:
             qs = qs.filter(title__icontains=search) | qs.filter(tags__icontains=search)
+        
+        ids = self.request.query_params.get("ids")
+        if ids:
+            id_list = ids.split(",")
+            qs = qs.filter(public_id__in=id_list)
+            
         return qs
 
 class PhotoDetailView(generics.RetrieveAPIView):
     queryset = Photo.objects.select_related("category", "author").all()
     serializer_class = PhotoDetailSerializer
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
     lookup_field = "public_id"
     lookup_url_kwarg = "public_id"

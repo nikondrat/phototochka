@@ -7,10 +7,15 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from . import media_constants as media_cfg
-from .models import Category, Photo
+from .models import Category, Photo, Orientation
 from .tasks import process_photo_media
 
 User = get_user_model()
+
+class OrientationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Orientation
+        fields = ("id", "name", "slug")
 
 class AuthorSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source="display_name")
@@ -18,19 +23,38 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "name", "avatarUrl")
+        fields = ("id", "name", "username", "avatarUrl")
 
 class PhotoListSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="public_id", read_only=True)
     category = serializers.CharField(source="category.name")
+    category_slug = serializers.CharField(source="category.slug", read_only=True)
     imageUrl = serializers.ImageField(source="image")
     imageWebp = serializers.ImageField(source="image_webp", read_only=True, allow_null=True)
     imageAvif = serializers.ImageField(source="image_avif", read_only=True, allow_null=True)
     blurHash = serializers.CharField(source="blur_hash", read_only=True, allow_blank=True)
     author = AuthorSerializer(read_only=True)
+    orientation = serializers.CharField(source="orientation.slug", read_only=True)
     uploadedAt = serializers.DateTimeField(source="uploaded_at")
     publicId = serializers.CharField(source="public_id")
-    licenseTypes = serializers.JSONField(source="license_types")
+    licenseTypes = serializers.SerializerMethodField()
+
+    def get_licenseTypes(self, obj):
+        # Временная логика: возвращаем стандартные лицензии на основе базовой цены фото
+        return [
+            {
+                "id": "personal",
+                "name": "Персональная",
+                "price": obj.price,
+                "description": "Для личного использования, соцсетей и блогов."
+            },
+            {
+                "id": "commercial",
+                "name": "Коммерческая",
+                "price": obj.price * 3,
+                "description": "Для рекламных кампаний, мерчандайзинга и печати."
+            }
+        ]
 
     class Meta:
         model = Photo
@@ -40,6 +64,7 @@ class PhotoListSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "category",
+            "category_slug",
             "imageUrl",
             "imageWebp",
             "imageAvif",
@@ -136,12 +161,16 @@ class AuthorPhotoCreateSerializer(serializers.ModelSerializer):
         with Image.open(image) as im:
             w, h = im.size
         image.seek(0)
+        
+        # Определение ориентации
         if w > h * 1.05:
-            orientation = Photo.Orientation.LANDSCAPE
+            o_slug = "landscape"
         elif h > w * 1.05:
-            orientation = Photo.Orientation.PORTRAIT
+            o_slug = "portrait"
         else:
-            orientation = Photo.Orientation.SQUARE
+            o_slug = "square"
+        
+        orientation = Orientation.objects.filter(slug=o_slug).first()
 
         photo = Photo(
             public_id=public_id,

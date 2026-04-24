@@ -19,9 +19,16 @@ export interface CategoryItem {
   slug: string
 }
 
+export interface OrientationItem {
+  id: number
+  name: string
+  slug: string
+}
+
 export interface AuthorCard {
   id: string
   name: string
+  username: string
   specialty: string
   avatarUrl: string | null
   photosCount: number
@@ -38,6 +45,7 @@ export interface ShowcasePayload {
   heroPhotos: ShowcasePhotoCard[]
   newPhotos: ShowcasePhotoCard[]
   categories: CategoryItem[]
+  orientations: OrientationItem[]
   authors: AuthorCard[]
   benefits: BenefitItem[]
 }

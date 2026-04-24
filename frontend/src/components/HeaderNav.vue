@@ -2,8 +2,11 @@
 import { ref, onMounted, onUnmounted, watch, nextTick, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { auth } from "../utils/auth";
-import { LogOut, User, LayoutDashboard } from "lucide-vue-next";
+import { LogOut, LayoutDashboard, Globe } from "lucide-vue-next";
+import AuthorAvatar from "./common/AuthorAvatar.vue";
+import { useI18n } from "vue-i18n";
 
+const { t, locale } = useI18n();
 const isMenuOpen = ref(false);
 const isScrolled = ref(false);
 const panelRef = ref<HTMLDivElement | null>(null);
@@ -16,15 +19,22 @@ type NavLink = {
   to: { name: string };
 };
 
-const navLinks: NavLink[] = [
-  { label: "Каталог", to: { name: "catalog" } },
-  { label: "Блог", to: { name: "blog" } },
-  { label: "Помощь", to: { name: "help" } },
-  { label: "О проекте", to: { name: "about" } },
-];
+const navLinks = computed<NavLink[]>(() => [
+  { label: t("nav.catalog"), to: { name: "catalog" } },
+  { label: t("nav.blog"), to: { name: "blog" } },
+  { label: "Помощь", to: { name: "help" } }, // TODO: i18n
+  { label: "О проекте", to: { name: "about" } }, // TODO: i18n
+]);
+
+function toggleLocale() {
+  const newLocale = locale.value === "ru" ? "en" : "ru";
+  locale.value = newLocale;
+  localStorage.setItem("ft_lang", newLocale);
+}
 
 const currentUser = computed(() => userState.value);
 const isAdmin = computed(() => userState.value?.role === "admin");
+const isAuthor = computed(() => userState.value?.role === "author");
 
 watch(
   () => route.path,
@@ -87,7 +97,7 @@ onUnmounted(() => {
   >
     <div class="container header__content">
       <RouterLink class="header__logo" to="/" @click="closeMenu">
-        <span class="header__logo-dot" />ФотоТочка
+        <span class="header__logo-dot" />{{ $t('home.title') }}
       </RouterLink>
 
       <nav class="header__nav">
@@ -115,11 +125,23 @@ onUnmounted(() => {
             <LayoutDashboard :size="20" />
           </RouterLink>
           <RouterLink
+            v-if="isAuthor"
+            class="header__action-icon"
+            to="/photographer"
+            title="Панель автора"
+          >
+            <LayoutDashboard :size="20" />
+          </RouterLink>
+          <RouterLink
             class="header__user-link"
             to="/profile"
             :title="currentUser.displayName || currentUser.username"
           >
-            <User :size="20" />
+            <AuthorAvatar 
+              :src="currentUser.avatar" 
+              :name="currentUser.displayName || currentUser.username" 
+              size="sm" 
+            />
             <span>{{ currentUser.displayName || currentUser.username }}</span>
           </RouterLink>
           <button
@@ -131,10 +153,8 @@ onUnmounted(() => {
           </button>
         </template>
         <template v-else>
-          <RouterLink class="btn btn--ghost" to="/login">Войти</RouterLink>
-          <RouterLink class="btn btn--primary" to="/register"
-            >Стать автором</RouterLink
-          >
+          <RouterLink class="btn btn--ghost" to="/login">{{ $t('nav.login') }}</RouterLink>
+          <RouterLink class="btn btn--primary" to="/register">{{ $t('auth.becomeAuthor') }}</RouterLink>
         </template>
       </div>
 
@@ -143,7 +163,7 @@ onUnmounted(() => {
         type="button"
         :aria-expanded="isMenuOpen"
         aria-controls="main-navigation"
-        aria-label="Открыть меню"
+        :aria-label="$t('common.menu')"
         @click="toggleMenu"
       >
         <span />
@@ -234,10 +254,16 @@ onUnmounted(() => {
                   Админка
                 </RouterLink>
                 <RouterLink class="header__mobile-user" to="/profile" @click="closeMenu">
+                  <AuthorAvatar 
+                    :src="currentUser.avatar" 
+                    :name="currentUser.displayName || currentUser.username" 
+                    size="md" 
+                    class="mx-auto mb-2"
+                  />
                   {{ currentUser.displayName || currentUser.username }}
                 </RouterLink>
                 <button class="btn btn--ghost" @click="handleLogout">
-                  Выйти
+                  {{ $t('common.logout') }}
                 </button>
               </template>
               <template v-else>
@@ -245,14 +271,14 @@ onUnmounted(() => {
                   class="btn btn--ghost"
                   to="/login"
                   @click="closeMenu"
-                  >Войти</RouterLink
+                  >{{ $t('nav.login') }}</RouterLink
                 >
                 <RouterLink
                   class="btn btn--primary"
                   to="/register"
                   @click="closeMenu"
                 >
-                  Стать автором
+                  {{ $t('auth.becomeAuthor') }}
                 </RouterLink>
               </template>
             </div>
@@ -354,11 +380,11 @@ onUnmounted(() => {
 .header__user-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--color-text);
-  padding: 0.5rem 0.75rem;
+  padding: 0.25rem 0.75rem 0.25rem 0.25rem;
   border-radius: 999px;
   transition: all 0.2s ease;
 }

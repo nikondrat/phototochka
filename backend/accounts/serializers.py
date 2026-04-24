@@ -33,6 +33,24 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "role", "dateJoined", "totalViews", "totalDownloads")
 
 
+class UserPublicSerializer(serializers.ModelSerializer):
+    dateJoined = serializers.DateTimeField(source="date_joined", read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "display_name",
+            "avatar",
+            "bio",
+            "website",
+            "instagram",
+            "dateJoined",
+            "role",
+        )
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,

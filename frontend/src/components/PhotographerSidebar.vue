@@ -69,6 +69,9 @@ defineProps<{
           <p class="photographer-sidebar__subtitle">ФотоТочка</p>
         </div>
       </div>
+      <RouterLink to="/" class="photographer-sidebar__back" title="На главную">
+        <AdminIcon name="logout" :size="20" style="transform: rotate(180deg)" />
+      </RouterLink>
       <button
         v-if="onClose"
         class="photographer-sidebar__close"
@@ -187,6 +190,24 @@ defineProps<{
   padding: 0.5rem;
   border-radius: 8px;
   transition: all 0.2s ease;
+}
+
+.photographer-sidebar__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  transition: all 0.2s ease;
+  background: rgba(15, 23, 42, 0.05);
+  margin-left: auto;
+  margin-right: 0.5rem;
+}
+
+.photographer-sidebar__back:hover {
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
 .photographer-sidebar__close:hover {

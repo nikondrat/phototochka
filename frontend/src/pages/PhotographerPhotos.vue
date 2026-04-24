@@ -106,7 +106,7 @@ function deletePhoto(_id: string) {
             :show-actions="true"
             :show-stats="true"
             :show-status="true"
-            @edit="() => {}"
+            @edit="() => router.push(`/photographer/photos/edit/${photo.id}`)"
             @delete="deletePhoto"
           />
         </div>

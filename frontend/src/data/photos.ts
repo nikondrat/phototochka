@@ -40,6 +40,7 @@ export interface Photo {
   author: {
     id: string
     name: string
+    username: string
     avatarUrl?: string
   }
   dimensions?: {
@@ -109,21 +110,25 @@ const authors = {
   'author-1': {
     id: 'author-1',
     name: 'Марина Колосова',
+    username: 'marina',
     avatarUrl: creativePortrait,
   },
   'author-2': {
     id: 'author-2',
     name: 'Алексей Дёмин',
+    username: 'alexey',
     avatarUrl: streetStyle,
   },
   'author-3': {
     id: 'author-3',
     name: 'Студия PlanLab',
+    username: 'planlab',
     avatarUrl: strategyWorkshop,
   },
   'author-4': {
     id: 'author-4',
     name: 'Дмитрий Лесной',
+    username: 'lesnoy',
   },
 }
 

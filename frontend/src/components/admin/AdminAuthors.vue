@@ -1,11 +1,26 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { authors } from '../../data/adminDemo'
-import type { AuthorCard } from '../../types/showcase'
+import { ref, computed, onMounted } from 'vue'
+import { adminService } from '../../services/adminService'
 import AdminIcon from './AdminIcon.vue'
 
-const allAuthors = ref<AuthorCard[]>([...authors])
+const allAuthors = ref<any[]>([])
+const loading = ref(true)
 const searchQuery = ref('')
+
+async function loadAuthors() {
+  loading.value = true
+  try {
+    allAuthors.value = await adminService.getAuthors()
+  } catch (error) {
+    console.error('Failed to fetch authors', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadAuthors()
+})
 
 const filteredAuthors = computed(() => {
   if (!searchQuery.value) return allAuthors.value
@@ -13,8 +28,8 @@ const filteredAuthors = computed(() => {
   const query = searchQuery.value.toLowerCase()
   return allAuthors.value.filter(
     (author) =>
-      author.name.toLowerCase().includes(query) ||
-      author.specialty.toLowerCase().includes(query)
+      author.displayName.toLowerCase().includes(query) ||
+      author.username.toLowerCase().includes(query)
   )
 })
 
@@ -93,12 +108,12 @@ function cancelEdit() {
         <div class="author-card__header">
           <div class="author-card__avatar">
             <img
-              v-if="author.avatarUrl"
-              :src="author.avatarUrl"
-              :alt="author.name"
+              v-if="author.avatar"
+              :src="author.avatar"
+              :alt="author.displayName || author.username"
             />
             <span v-else class="author-card__avatar-fallback" aria-hidden="true">{{
-              author.name.charAt(0).toUpperCase()
+              (author.displayName || author.username).charAt(0).toUpperCase()
             }}</span>
           </div>
           <div class="author-card__actions">
@@ -121,32 +136,18 @@ function cancelEdit() {
         <div class="author-card__body">
           <div v-if="isEditing === author.id && editingAuthor" class="author-card__edit">
             <input
-              v-model="editingAuthor.name"
+              v-model="editingAuthor.displayName"
               type="text"
               class="admin-input admin-input--small"
               placeholder="Имя"
             />
-            <input
-              v-model="editingAuthor.specialty"
-              type="text"
-              class="admin-input admin-input--small"
-              placeholder="Специализация"
-            />
             <div class="author-card__meta-inputs">
               <input
-                v-model.number="editingAuthor.photosCount"
+                v-model.number="editingAuthor.photoCount"
                 type="number"
                 class="admin-input admin-input--small"
                 placeholder="Количество фото"
-              />
-              <input
-                v-model.number="editingAuthor.rating"
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
-                class="admin-input admin-input--small"
-                placeholder="Рейтинг"
+                disabled
               />
             </div>
             <div class="author-card__actions">
@@ -155,16 +156,15 @@ function cancelEdit() {
             </div>
           </div>
           <div v-else>
-            <h3 class="author-card__name">{{ author.name }}</h3>
-            <p class="author-card__specialty">{{ author.specialty }}</p>
+            <h3 class="author-card__name">{{ author.displayName || author.username }}</h3>
+            <p class="author-card__specialty">{{ author.email }}</p>
             <div class="author-card__meta">
               <div class="author-card__stat">
-                <AdminIcon name="star" :size="16" />
-                <span>{{ author.rating || 0 }}</span>
-              </div>
-              <div class="author-card__stat">
                 <AdminIcon name="photo" :size="16" />
-                <span>{{ author.photosCount || 0 }} фото</span>
+                <span>{{ author.photoCount || 0 }} фото</span>
+              </div>
+              <div class="author-card__stat" :class="author.isActive ? 'text-green' : 'text-red'">
+                <span>{{ author.isActive ? 'Активен' : 'Заблокирован' }}</span>
               </div>
             </div>
           </div>

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import AppImage from './common/AppImage.vue'
 import AdminIcon from './admin/AdminIcon.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Photo {
   id: string
@@ -45,9 +48,9 @@ const emit = defineEmits<{
 
 function getStatusLabel(status: string) {
   const labels: Record<string, string> = {
-    published: 'Опубликовано',
-    pending: 'На модерации',
-    draft: 'Черновик',
+    published: t('common.success'),
+    pending: t('common.loading'),
+    draft: 'Draft', // TODO: add to i18n
   }
   return labels[status] || status
 }
@@ -76,7 +79,7 @@ function getStatusClass(status: string) {
         v-if="showFavorite"
         class="photo-card__fav"
         :aria-pressed="isFavorite"
-        :title="isFavorite ? 'Убрать из избранного' : 'В избранное'"
+        :title="isFavorite ? $t('common.reset') : $t('common.save')"
         @click.stop.prevent="emit('toggle-favorite', photo.id)"
       >
         <span class="photo-card__fav-icon" :class="{ 'photo-card__fav-icon--on': isFavorite }">♥</span>
@@ -153,7 +156,7 @@ function getStatusClass(status: string) {
 
 .photo-card__image {
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1 / 1;
   background: rgba(15, 23, 42, 0.05);
   overflow: hidden;
 }

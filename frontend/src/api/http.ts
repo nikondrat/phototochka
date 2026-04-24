@@ -7,14 +7,19 @@ const getBaseUrl = () => {
 }
 
 let isRefreshing = false
-let refreshSubscribers: ((token: string) => void)[] = []
+let refreshSubscribers: { resolve: (token: string) => void; reject: (err: any) => void }[] = []
 
-const subscribeTokenRefresh = (cb: (token: string) => void) => {
-  refreshSubscribers.push(cb)
+const subscribeTokenRefresh = (resolve: (token: string) => void, reject: (err: any) => void) => {
+  refreshSubscribers.push({ resolve, reject })
 }
 
 const onRefreshed = (token: string) => {
-  refreshSubscribers.map((cb) => cb(token))
+  refreshSubscribers.forEach((sub) => sub.resolve(token))
+  refreshSubscribers = []
+}
+
+const onRefreshError = (err: any) => {
+  refreshSubscribers.forEach((sub) => sub.reject(err))
   refreshSubscribers = []
 }
 
@@ -35,6 +40,9 @@ export async function apiFetch<T = any>(
   if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
+
+  const lang = localStorage.getItem('ft_lang') || 'ru'
+  headers.set('Accept-Language', lang)
 
   const token = localStorage.getItem('access_token')
   if (token) {
@@ -69,20 +77,29 @@ export async function apiFetch<T = any>(
           localStorage.removeItem('access_token')
           localStorage.removeItem('refresh_token')
           localStorage.removeItem('fototochka_user')
+          isRefreshing = false
+          const err = new Error('Session expired')
+          onRefreshError(err)
           window.location.href = '/login'
-          throw new Error('Session expired')
+          throw err
         }
       } catch (err) {
         isRefreshing = false
+        onRefreshError(err)
         throw err
       }
     }
 
-    return new Promise((resolve) => {
-      subscribeTokenRefresh((token) => {
-        headers.set('Authorization', `Bearer ${token}`)
-        resolve(fetch(url, { ...options, headers }).then(res => res.json()))
-      })
+    return new Promise((resolve, reject) => {
+      subscribeTokenRefresh(
+        (token) => {
+          headers.set('Authorization', `Bearer ${token}`)
+          resolve(apiFetch(endpoint, options))
+        },
+        (err) => {
+          reject(err)
+        }
+      )
     })
   }
 

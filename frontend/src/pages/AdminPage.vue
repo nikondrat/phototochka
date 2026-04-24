@@ -56,6 +56,9 @@ const activeTabData = computed(() => tabs.find((t) => t.id === activeTab.value))
             <p class="admin-sidebar__subtitle">ФотоТочка</p>
           </div>
         </div>
+        <RouterLink to="/" class="admin-sidebar__back" title="На главную">
+          <AdminIcon name="logout" :size="20" style="transform: rotate(180deg)" />
+        </RouterLink>
         <button
           class="admin-sidebar__close"
           @click="isSidebarOpen = false"
@@ -207,6 +210,24 @@ const activeTabData = computed(() => tabs.find((t) => t.id === activeTab.value))
   padding: 0.5rem;
   border-radius: 8px;
   transition: all 0.2s ease;
+}
+
+.admin-sidebar__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  transition: all 0.2s ease;
+  background: rgba(15, 23, 42, 0.05);
+  margin-left: auto;
+  margin-right: 0.5rem;
+}
+
+.admin-sidebar__back:hover {
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
 .admin-sidebar__close:hover {

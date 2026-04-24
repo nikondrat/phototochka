@@ -109,7 +109,21 @@ watch(
 
 async function loadAuthorData() {
   const username = route.params.username as string
+  if (!username) {
+    loading.value = false
+    return
+  }
+  
   loading.value = true
+  
+  // Safety timeout to prevent infinite loading state
+  const timeout = setTimeout(() => {
+    if (loading.value) {
+      loading.value = false
+      console.warn('Author data load timed out')
+    }
+  }, 10000)
+
   try {
     const data = await apiFetch<any>(`/auth/authors/${username}/`)
     author.value = data
@@ -120,6 +134,7 @@ async function loadAuthorData() {
     console.error('Failed to fetch author data', error)
     author.value = null
   } finally {
+    clearTimeout(timeout)
     loading.value = false
   }
 }

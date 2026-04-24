@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { CategoryItem } from '../types/showcase'
+import type { CategoryItem, OrientationItem } from '../types/showcase'
 
 interface Props {
   categories: CategoryItem[]
+  orientations: OrientationItem[]
   modelValue?: string
 }
 
@@ -15,7 +16,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
   'search': [query: string]
   'category-select': [categorySlug: string]
-  'orientation-select': [orientation: 'landscape' | 'portrait' | 'square']
+  'orientation-select': [orientationSlug: string]
 }>()
 
 const searchQuery = ref(props.modelValue || '')
@@ -30,8 +31,8 @@ function handleCategoryClick(category: CategoryItem) {
   emit('category-select', category.slug)
 }
 
-function handleOrientationClick(orientation: 'landscape' | 'portrait' | 'square') {
-  emit('orientation-select', orientation)
+function handleOrientationClick(orientation: OrientationItem) {
+  emit('orientation-select', orientation.slug)
 }
 </script>
 
@@ -43,11 +44,11 @@ function handleOrientationClick(orientation: 'landscape' | 'portrait' | 'square'
           v-model="searchQuery"
           class="catalog-search__input"
           type="search"
-          placeholder="Поиск по названию, тегам или автору..."
+          :placeholder="$t('catalog.searchPlaceholder')"
           aria-label="Поиск фотографий"
           @keyup.enter="handleSearch"
         />
-        <button class="catalog-search__button" type="button" @click="handleSearch" aria-label="Искать">
+        <button class="catalog-search__button" type="button" @click="handleSearch" :aria-label="$t('common.search')">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M9 16A7 7 0 1 0 9 2a7 7 0 0 0 0 14ZM17 17l-3.5-3.5"
@@ -65,7 +66,7 @@ function handleOrientationClick(orientation: 'landscape' | 'portrait' | 'square'
         type="button"
         @click="showFilters = !showFilters"
         :aria-expanded="showFilters"
-        aria-label="Показать фильтры"
+        :aria-label="$t('catalog.filters')"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -75,14 +76,14 @@ function handleOrientationClick(orientation: 'landscape' | 'portrait' | 'square'
             stroke-linecap="round"
           />
         </svg>
-        <span>Фильтры</span>
+        <span>{{ $t('catalog.filters') }}</span>
       </button>
     </div>
 
     <transition name="filters">
       <div v-if="showFilters" class="catalog-search__filters">
         <div class="catalog-search__filter-group">
-          <span class="catalog-search__filter-label">Категория</span>
+          <span class="catalog-search__filter-label">{{ $t('catalog.categories') }}</span>
           <div class="catalog-search__filter-chips">
             <button
               v-for="category in categories"
@@ -97,28 +98,16 @@ function handleOrientationClick(orientation: 'landscape' | 'portrait' | 'square'
         </div>
 
         <div class="catalog-search__filter-group">
-          <span class="catalog-search__filter-label">Ориентация</span>
+          <span class="catalog-search__filter-label">{{ $t('catalog.orientation') }}</span>
           <div class="catalog-search__filter-chips">
             <button
+              v-for="orientation in orientations"
+              :key="orientation.slug"
               type="button"
               class="catalog-search__chip"
-              @click="handleOrientationClick('landscape')"
+              @click="handleOrientationClick(orientation)"
             >
-              Горизонтальная
-            </button>
-            <button
-              type="button"
-              class="catalog-search__chip"
-              @click="handleOrientationClick('portrait')"
-            >
-              Вертикальная
-            </button>
-            <button
-              type="button"
-              class="catalog-search__chip"
-              @click="handleOrientationClick('square')"
-            >
-              Квадратная
+              {{ orientation.name }}
             </button>
           </div>
         </div>

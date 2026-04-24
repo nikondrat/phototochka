@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AuthorCard } from '../types/showcase'
+import AuthorAvatar from './common/AuthorAvatar.vue'
 
 interface Props {
   authors: AuthorCard[]
@@ -21,18 +22,19 @@ const props = defineProps<Props>()
       </div>
 
       <div class="authors__grid" role="list">
-        <article v-for="author in props.authors" :key="author.id" class="authors__card" role="listitem">
-          <div class="authors__avatar">
-            <img
-              v-if="author.avatarUrl"
-              :src="author.avatarUrl"
-              :alt="author.name"
-              loading="lazy"
-              decoding="async"
+        <RouterLink 
+          v-for="author in props.authors" 
+          :key="author.id" 
+          class="authors__card" 
+          role="listitem"
+          :to="`/author/@${author.username}`"
+        >
+          <div class="authors__header">
+            <AuthorAvatar 
+              :src="author.avatarUrl" 
+              :name="author.name" 
+              size="lg" 
             />
-            <span v-else class="authors__avatar-fallback" aria-hidden="true">{{
-              author.name.charAt(0).toUpperCase()
-            }}</span>
           </div>
           <div class="authors__info">
             <h3 class="authors__name">{{ author.name }}</h3>
@@ -41,9 +43,9 @@ const props = defineProps<Props>()
               <span>{{ author.photosCount }} фото</span>
               <span>Рейтинг {{ author.rating.toFixed(1) }}</span>
             </div>
-            <button class="btn btn--ghost authors__cta" type="button">Смотреть профиль</button>
+            <span class="btn btn--ghost authors__cta">Смотреть профиль</span>
           </div>
-        </article>
+        </RouterLink>
       </div>
     </div>
   </section>
@@ -60,37 +62,24 @@ const props = defineProps<Props>()
   border-radius: 24px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: #ffffff;
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.04);
   padding: 1.75rem;
   display: grid;
   gap: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.authors__avatar {
-  inline-size: 80px;
-  block-size: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 3px solid rgba(16, 185, 129, 0.35);
-  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.25);
+.authors__card:hover {
+  transform: translateY(-8px);
+  border-color: var(--color-accent);
+  box-shadow: 0 24px 48px rgba(16, 185, 129, 0.12);
 }
 
-.authors__avatar img {
-  inline-size: 100%;
-  block-size: 100%;
-  object-fit: cover;
-}
-
-.authors__avatar-fallback {
+.authors__header {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 100%;
-  block-size: 100%;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--color-accent), #0f172a);
+  justify-content: flex-start;
 }
 
 .authors__info {
@@ -100,7 +89,9 @@ const props = defineProps<Props>()
 
 .authors__name {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.35rem;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
 }
 
 .authors__specialty {
@@ -120,6 +111,8 @@ const props = defineProps<Props>()
 
 .authors__cta {
   justify-self: flex-start;
+  margin-top: 0.5rem;
+  pointer-events: none; /* Чтобы клик шел по карточке */
 }
 </style>
 
